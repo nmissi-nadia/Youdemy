@@ -112,6 +112,9 @@
             </div>
         </div>
     </section>
+<!-- include fichier contenant section footer -->
+    <!-- Footer Section -->
+    <?php include 'footer.html'; ?>
 
     <script>
         // Animation d'entrée avec GSAP
