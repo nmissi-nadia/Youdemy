@@ -1,3 +1,40 @@
+<?php
+session_start();
+require_once '../classes/Enseignant.php';
+require_once '../classes/Etudiant.php';
+
+// Gestion de la soumission du formulaire
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = htmlspecialchars($_POST['email']);
+    $motDePasse = htmlspecialchars($_POST['motDePasse']);
+    $role = htmlspecialchars($_POST['role']);
+
+    $utilisateur = null;
+
+    if ($role == 'admin') {
+        $utilisateur = Admin::connexion($email, $motDePasse);
+    } elseif ($role == 'Enseignant') {
+        $utilisateur = Enseignant::connexion($email, $motDePasse);
+    } elseif ($role == 'etudiant') {
+        $utilisateur = Etudiant::connexion($email, $motDePasse);
+    }
+
+    if ($utilisateur) {
+        echo "Connexion réussie!";
+        // Rediriger vers la page d'accueil ou tableau de bord
+        if ($role == 'admin') {
+            header('Location: ./admin_dashboard.php');
+        } elseif ($role == 'Enseignant') {
+            header('Location: ./enseignant_dashboard.php');
+        } elseif ($role == 'etudiant') {
+            header('Location: ./etudiant_dashboard.php');
+        }
+        exit;
+    } else {
+        $message = "Échec de la connexion. Vérifiez vos informations d'identification.";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -64,8 +101,8 @@
                     <!-- Section droite: Formulaires -->
                     <div class="w-full md:w-1/2 p-8">
                         <div class="tabs flex justify-center mb-8">
-                            <button class="px-6 py-2 font-semibold text-indigo-600 border-b-2 border-indigo-600 tab-active" data-tab="login">Connexion</button>
-                            <button class="px-6 py-2 font-semibold text-gray-500 border-b-2 border-transparent" data-tab="register">Inscription</button>
+                            <button data-tab="login" class="px-6 py-2 font-semibold text-indigo-600 border-b-2 border-indigo-600 tab-active" >Connexion</button>
+                            <button  data-tab="register" class="px-6 py-2 font-semibold text-gray-500 border-b-2 border-transparent">Inscription</button>
                         </div>
 
                         <!-- Formulaire de connexion -->
@@ -170,7 +207,7 @@
         forms.register.addEventListener('submit', (e) => {
             e.preventDefault();
             // Ajoutez ici la logique d'inscription
-            console.log('Tentative d'inscription...');
+            console.log('Tentative d\'inscription...');
         });
     </script>
 </body>

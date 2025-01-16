@@ -21,8 +21,8 @@
                     <a href="#" class="text-gray-600 hover:text-indigo-600 transition">Enseignants</a>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button class="px-4 py-2 rounded-lg text-indigo-600 hover:bg-indigo-50 transition">Connexion</button>
-                    <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Inscription</button>
+                    <a href="./login.php" class="px-4 py-2 rounded-lg text-indigo-600 hover:bg-indigo-50 transition">Connexion</a>
+                    <a href="./login.php" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Inscription</a>
                 </div>
             </div>
         </div>
