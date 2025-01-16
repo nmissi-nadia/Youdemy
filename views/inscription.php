@@ -1,9 +1,10 @@
 <?php
 session_start();
 
-require_once '../classes/Admin.php';
+require_once '../classes/User.php';
 require_once '../classes/Enseignant.php';
 require_once '../classes/Etudiant.php';
+require_once '../classes/Database.php';
 
 // Gestion de la soumission du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -18,9 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($motDePasse !== $confirmerMotDePasse) {
             $message = "Les mots de passe ne correspondent pas.";
         } else {
-            if ($role == 'admin') {
-                $inscriptionReussie = Admin::inscription($prenom, $email, $motDePasse);
-            } elseif ($role == 'Enseignant') {
+            if ($role == 'Enseignant') {
                 $inscriptionReussie = Enseignant::inscription($prenom, $email, $motDePasse);
             } elseif ($role == 'etudiant') {
                 $inscriptionReussie = Etudiant::inscription($prenom, $email, $motDePasse);

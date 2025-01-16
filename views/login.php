@@ -3,17 +3,16 @@ session_start();
 require_once '../classes/Database.php';
 require_once '../classes/User.php';
 require_once '../classes/Enseignant.php';
-
+require_once '../classes/Admin.php';
 require_once '../classes/Etudiant.php';
-
 // Gestion de la soumission du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = htmlspecialchars($_POST['email']);
     $motDePasse = htmlspecialchars($_POST['motDePasse']);
 
-    $utilisateur = User::connexion($email, $motDePasse);
+    try {
+        $utilisateur = User::signin($email, $motDePasse);
 
-    if ($utilisateur) {
         echo "Connexion réussie!";
         // Rediriger vers la page d'accueil ou tableau de bord
         if ($_SESSION['user_role'] == 'admin') {
@@ -24,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: ./etudiant_dashboard.php');
         }
         exit;
-    } else {
+    } catch (Exception $e) {
         $message = "Échec de la connexion. Vérifiez vos informations d'identification.";
     }
 }
@@ -122,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </form>
 
                         <!-- Formulaire d'inscription -->
-                        <form method="POST" action="inscription.php" id="registerForm" class="space-y-6 hidden">
+                        <form method="POST" action="./inscription.php" id="registerForm" class="space-y-6 hidden">
                             <div>
                                 <label class="block text-gray-700 mb-2">Nom complet</label>
                                 <input type="text" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
@@ -191,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         });
 
-        });
+      
     </script>
 </body>
 </html>
