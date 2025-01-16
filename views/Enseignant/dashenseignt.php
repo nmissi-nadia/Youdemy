@@ -195,7 +195,7 @@
             </div>
         </div>
     </div>
-
+    <?php include '../footer.html'; ?>
     <script>
         // Configuration du graphique d'inscriptions
         const ctx = document.getElementById('enrollmentChart').getContext('2d');

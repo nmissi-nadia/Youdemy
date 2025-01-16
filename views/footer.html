@@ -1,28 +1,151 @@
-<footer class="bg-blue-600 text-white mt-12">
-    <div class="container mx-auto px-6 py-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Section 1 -->
-            <div>
-                <h3 class="text-xl font-bold mb-4">À propos</h3>
-                <p class="text-gray-200">Youdemy est une plateforme d'apprentissage en ligne offrant des cours interactifs et personnalisés.</p>
+<style>
+    .gradient-border {
+        position: relative;
+        border-radius: 0.5rem;
+        z-index: 0;
+    }
+
+    .gradient-border::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #4f46e5, #818cf8);
+        border-radius: 0.6rem;
+        z-index: -1;
+    }
+
+    .category-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .category-item:hover .category-icon {
+        transform: translateY(-5px);
+    }
+</style>
+<footer class="bg-white border-t border-gray-200">
+    
+
+    <!-- Section newsletter -->
+    <div class="py-12 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Restez inspiré</h3>
+                <p class="text-gray-600">Recevez des conseils d'apprentissage et des offres exclusives.</p>
             </div>
-            <!-- Section 2 -->
-            <div>
-                <h3 class="text-xl font-bold mb-4">Liens utiles</h3>
-                <ul class="space-y-2">
-                    <li><a href="/pages/visiteur/catalogue.php" class="text-gray-200 hover:underline">Catalogue des cours</a></li>
-                    <li><a href="/pages/visiteur/recherche.php" class="text-gray-200 hover:underline">Rechercher un cours</a></li>
-                </ul>
-            </div>
-            <!-- Section 3 -->
-            <div>
-                <h3 class="text-xl font-bold mb-4">Contact</h3>
-                <p class="text-gray-200">Email: support@youdemy.com</p>
-                <p class="text-gray-200">Téléphone: +212 6 12 34 56 78</p>
+            <div class="max-w-lg mx-auto">
+                <form class="gradient-border p-1">
+                    <div class="flex bg-white rounded-lg">
+                        <input type="email" placeholder="Votre adresse email" class="flex-1 px-4 py-3 rounded-l-lg focus:outline-none">
+                        <button class="px-6 py-3 bg-indigo-600 text-white rounded-r-lg hover:bg-indigo-700 transition-colors font-medium">
+                            S'abonner
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-        <div class="border-t border-blue-500 mt-8 pt-8 text-center">
-            <p class="text-gray-200">&copy; 2023 Youdemy. Tous droits réservés.</p>
+    </div>
+
+    <!-- Liens et informations -->
+    <div class="bg-gray-50 py-12 bg-indigo-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- À propos -->
+                <div>
+                    <h4 class="text-gray-800 font-semibold mb-4">À propos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Qui sommes-nous</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Notre mission</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Carrières</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Blog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Ressources -->
+                <div>
+                    <h4 class="text-gray-800 font-semibold mb-4">Ressources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Centre d'aide</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Guide des formateurs</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Partenariats</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Programme d'affiliation</a></li>
+                    </ul>
+                </div>
+
+                <!-- Support -->
+                <div>
+                    <h4 class="text-gray-800 font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">FAQ</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Contact</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Signaler un problème</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Certificats</a></li>
+                    </ul>
+                </div>
+
+                <!-- Communauté -->
+                <div>
+                    <h4 class="text-gray-800 font-semibold mb-4">Communauté</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Forum</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Événements</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-indigo-600">Témoignages</a></li>
+                        <li class="pt-4">
+                            <div class="flex space-x-4">
+                                <a href="#" class="text-gray-600 hover:text-indigo-600">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="text-gray-600 hover:text-indigo-600">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="text-gray-600 hover:text-indigo-600">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="#" class="text-gray-600 hover:text-indigo-600">
+                                    <i class="fab fa-youtube"></i>
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer bottom -->
+    <div class="bg-white py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-4">
+                    <img src="/api/placeholder/40/40" alt="Youdemy Logo" class="h-8">
+                    <span class="text-gray-600">© 2024 Youdemy. Tous droits réservés.</span>
+                </div>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="#" class="text-gray-600 hover:text-indigo-600">Confidentialité</a>
+                    <a href="#" class="text-gray-600 hover:text-indigo-600">CGU</a>
+                    <a href="#" class="text-gray-600 hover:text-indigo-600">Mentions légales</a>
+                    <a href="#" class="text-gray-600 hover:text-indigo-600">Accessibilité</a>
+                </div>
+            </div>
         </div>
     </div>
 </footer>
+
+<script>
+    
+
+    // Gestion du formulaire newsletter
+    document.querySelector('form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = e.target.querySelector('input[type="email"]').value;
+        
+        if (email) {
+            // Simulation d'envoi
+            console.log('Inscription newsletter:', email);
+            e.target.reset();
+            alert('Merci de votre inscription à la newsletter !');
+        }
+    });
+</script>

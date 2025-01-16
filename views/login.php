@@ -10,26 +10,17 @@ require_once '../classes/Etudiant.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = htmlspecialchars($_POST['email']);
     $motDePasse = htmlspecialchars($_POST['motDePasse']);
-    $role = htmlspecialchars($_POST['role']);
 
-    $utilisateur = null;
-
-    if ($role == 'admin') {
-        $utilisateur = Admin::connexion($email, $motDePasse);
-    } elseif ($role == 'Enseignant') {
-        $utilisateur = Enseignant::connexion($email, $motDePasse);
-    } elseif ($role == 'etudiant') {
-        $utilisateur = Etudiant::connexion($email, $motDePasse);
-    }
+    $utilisateur = User::connexion($email, $motDePasse);
 
     if ($utilisateur) {
         echo "Connexion réussie!";
         // Rediriger vers la page d'accueil ou tableau de bord
-        if ($role == 'admin') {
+        if ($_SESSION['user_role'] == 'admin') {
             header('Location: ./admin_dashboard.php');
-        } elseif ($role == 'Enseignant') {
+        } elseif ($_SESSION['user_role'] == 'Enseignant') {
             header('Location: ./enseignant_dashboard.php');
-        } elseif ($role == 'etudiant') {
+        } elseif ($_SESSION['user_role'] == 'etudiant') {
             header('Location: ./etudiant_dashboard.php');
         }
         exit;
@@ -109,14 +100,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
 
                         <!-- Formulaire de connexion -->
-                        <form id="loginForm" class="space-y-6">
+                        <form method="POST" action="" id="loginForm" class="space-y-6">
                             <div>
                                 <label class="block text-gray-700 mb-2">Email</label>
-                                <input type="email" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
+                                <input type="email" name="email" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
                             </div>
                             <div>
                                 <label class="block text-gray-700 mb-2">Mot de passe</label>
-                                <input type="password" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
+                                <input type="password" name="motDePasse" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
                             </div>
                             <div class="flex items-center justify-between">
                                 <label class="flex items-center">
@@ -131,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </form>
 
                         <!-- Formulaire d'inscription -->
-                        <form id="registerForm" class="space-y-6 hidden">
+                        <form method="POST" action="inscription.php" id="registerForm" class="space-y-6 hidden">
                             <div>
                                 <label class="block text-gray-700 mb-2">Nom complet</label>
                                 <input type="text" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
@@ -200,17 +191,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         });
 
-        // Gestion des soumissions de formulaire
-        forms.login.addEventListener('submit', (e) => {
-            e.preventDefault();
-            // Ajoutez ici la logique de connexion
-            console.log('Tentative de connexion...');
-        });
-
-        forms.register.addEventListener('submit', (e) => {
-            e.preventDefault();
-            // Ajoutez ici la logique d'inscription
-            console.log('Tentative d\'inscription...');
         });
     </script>
 </body>

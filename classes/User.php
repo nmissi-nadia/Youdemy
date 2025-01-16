@@ -68,7 +68,33 @@ abstract class User {
     public function setStatus(string $status): void {
         $this->status = $status;
     }
-    abstract static public function login($email, $password);
+    public static function connexion($email, $password) {
+        $bd = BaseDeDonnees::getInstance();
+        $pdo = $bd->getConnexion();
+
+        $stmt = $pdo->prepare("SELECT * FROM user WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user && password_verify($password, $user['password'])) {
+            session_start();
+            $_SESSION['user_id'] = $user['iduser'];
+            $_SESSION['user_role'] = $user['role'];
+            $_SESSION['user_email'] = $user['email'];
+            $_SESSION['user_prenom'] = $user['prenom'];
+            $_SESSION['user_nom'] = $user['nom'];
+
+            if ($user['role'] == 'admin') {
+                return new Admin();
+            } elseif ($user['role'] == 'Enseignant') {
+                return new Enseignant();
+            } elseif ($user['role'] == 'etudiant') {
+                return new Etudiant();
+            }
+        } else {
+            return null;
+        }
+    }
 
     
 }

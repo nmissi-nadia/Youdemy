@@ -6,6 +6,33 @@
     <title>Youdemy - Plateforme d'apprentissage en ligne</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    .gradient-border {
+        position: relative;
+        border-radius: 0.5rem;
+        z-index: 0;
+    }
+
+    .gradient-border::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #4f46e5, #818cf8);
+        border-radius: 0.6rem;
+        z-index: -1;
+    }
+
+    .category-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .category-item:hover .category-icon {
+        transform: translateY(-5px);
+    }
+</style>
 </head>
 <body class="bg-gradient-to-br from-indigo-100 to-white min-h-screen">
     <!-- Navigation -->
@@ -112,6 +139,81 @@
             </div>
         </div>
     </section>
+    <!-- Bannière de catégories populaires -->
+    <div class="bg-gray-50 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h3 class="text-2xl font-bold text-center text-gray-800 mb-8">Catégories populaires</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
+                    <div class="text-indigo-600 mb-3 category-icon">
+                        <i class="fas fa-laptop-code text-3xl"></i>
+                    </div>
+                    <span class="text-gray-700 text-sm font-medium">Développement</span>
+                </a>
+                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
+                    <div class="text-indigo-600 mb-3 category-icon">
+                        <i class="fas fa-chart-line text-3xl"></i>
+                    </div>
+                    <span class="text-gray-700 text-sm font-medium">Business</span>
+                </a>
+                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
+                    <div class="text-indigo-600 mb-3 category-icon">
+                        <i class="fas fa-palette text-3xl"></i>
+                    </div>
+                    <span class="text-gray-700 text-sm font-medium">Design</span>
+                </a>
+                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
+                    <div class="text-indigo-600 mb-3 category-icon">
+                        <i class="fas fa-language text-3xl"></i>
+                    </div>
+                    <span class="text-gray-700 text-sm font-medium">Langues</span>
+                </a>
+                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
+                    <div class="text-indigo-600 mb-3 category-icon">
+                        <i class="fas fa-camera text-3xl"></i>
+                    </div>
+                    <span class="text-gray-700 text-sm font-medium">Photographie</span>
+                </a>
+                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
+                    <div class="text-indigo-600 mb-3 category-icon">
+                        <i class="fas fa-music text-3xl"></i>
+                    </div>
+                    <span class="text-gray-700 text-sm font-medium">Musique</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Devenir formateur -->
+    <div class="bg-indigo-50 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+                <div class="flex-1">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Devenez formateur sur Youdemy</h3>
+                    <p class="text-gray-600 mb-6">Partagez vos connaissances avec une communauté mondiale d'apprenants passionnés.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-gray-600">
+                            <i class="fas fa-check-circle text-indigo-600 mr-2"></i>
+                            Atteignez des millions d'étudiants
+                        </li>
+                        <li class="flex items-center text-gray-600">
+                            <i class="fas fa-check-circle text-indigo-600 mr-2"></i>
+                            Gagnez un revenu passif
+                        </li>
+                        <li class="flex items-center text-gray-600">
+                            <i class="fas fa-check-circle text-indigo-600 mr-2"></i>
+                            Bénéficiez de notre support technique
+                        </li>
+                    </ul>
+                </div>
+                <div class="flex-1 text-center">
+                    <a href="#" class="inline-block px-8 py-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">
+                        Commencer à enseigner
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 <!-- include fichier contenant section footer -->
     <!-- Footer Section -->
     <?php include 'footer.html'; ?>
@@ -151,7 +253,18 @@
                 onComplete: startCounters
             });
         });
+        // Animation des catégories au survol
+        document.querySelectorAll('.category-item').forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    const icon = item.querySelector('.category-icon');
+                    icon.style.transform = 'translateY(-5px)';
+                });
 
+                item.addEventListener('mouseleave', () => {
+                    const icon = item.querySelector('.category-icon');
+                    icon.style.transform = 'translateY(0)';
+                });
+            });
         // Animation des compteurs
         function startCounters() {
             const counters = document.querySelectorAll('.counter');
