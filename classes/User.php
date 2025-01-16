@@ -8,12 +8,11 @@ abstract class User {
     private $email;
     private $passwordHash;
 
-    public function __construct($id, $nom, $prenom, $email, $passwordHash = null) {
+    public function __construct($id, $nom, $prenom, $email) {
         $this->id = $id;
         $this->nom = $nom;
         $this->prenom = $prenom;
         $this->email = $email;
-        $this->passwordHash = $passwordHash;
     }
 
     public function __toString() {
@@ -27,36 +26,47 @@ abstract class User {
     public function getEmail() { return $this->email; }
 
     // Password hashing method
-    private function setPasswordHash($password) {
+    public function setPasswordHash($password) {
         $this->passwordHash = password_hash($password, PASSWORD_BCRYPT);
     }
 
+    public function setNom(string $nom): void {
+        $this->nom = $nom;
+    }
+
+    public function setPrenom(string $prenom): void {
+        $this->prenom = $prenom;
+    }
+
+    public function setEmail(string $email): void {
+        $this->email = $email;
+    }
+
+
+    public function setRole(string $role): void {
+        $this->role = $role;
+    }
+
+    public function setStatus(string $status): void {
+        $this->status = $status;
+    }
     // Save user to the database
     public function save() {
-        $db = Database::getInstance()->getConnection();
-        try {
-            if ($this->id) {
-                // Update user
-                $stmt = $db->prepare("UPDATE users SET nom = :nom, prenom = :prenom, email = :email WHERE id = :id");
-                $stmt->bindParam(':id', $this->id, PDO::PARAM_INT);
-                $stmt->bindParam(':nom', $this->nom, PDO::PARAM_STR);
-                $stmt->bindParam(':prenom', $this->prenom, PDO::PARAM_STR);
-                $stmt->bindParam(':email', $this->email, PDO::PARAM_STR);
-                $stmt->execute();
-            } else {
-                // Insert new user
-                $stmt = $db->prepare("INSERT INTO users (nom, prenom, email, password) VALUES (:nom, :prenom, :email, :password)");
-                $stmt->bindParam(':nom', $this->nom, PDO::PARAM_STR);
-                $stmt->bindParam(':prenom', $this->prenom, PDO::PARAM_STR);
-                $stmt->bindParam(':email', $this->email, PDO::PARAM_STR);
-                $stmt->bindParam(':password', $this->passwordHash, PDO::PARAM_STR);
-                $stmt->execute();
-                $this->id = $db->lastInsertId(); // Set the new user ID
+        $bd = Database::getInstance();
+        $pdo = $bd->getConnection();
+
+        if ($this->id) {
+            // Update existing user
+            $stmt = $pdo->prepare("UPDATE user SET nom = ?, prenom = ?, email = ?, password = ?, role = ?, status = ? WHERE iduser = ?");
+            return $stmt->execute([$this->nom, $this->prenom, $this->email, $this->passwordHash, $this->role, $this->status, $this->id]);
+        } else {
+            // Insert new user
+            $stmt = $pdo->prepare("INSERT INTO user (nom, prenom, email, password, role) VALUES (?, ?, ?, ?, ?)");
+            $result = $stmt->execute([$this->nom, $this->prenom, $this->email, $this->passwordHash, $this->role]);
+            if ($result) {
+                $this->id = $pdo->lastInsertId();
             }
-            return $this->id;
-        } catch (PDOException $e) {
-            error_log("Database error: " . $e->getMessage());
-            throw new Exception("An error occurred while saving the user.");
+            return $result;
         }
     }
     

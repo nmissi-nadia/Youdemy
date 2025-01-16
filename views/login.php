@@ -124,30 +124,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <form method="POST" action="./inscription.php" id="registerForm" class="space-y-6 hidden">
                             <div>
                                 <label class="block text-gray-700 mb-2">Nom complet</label>
-                                <input type="text" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
+                                <input type="text" name="nom" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Nom complet</label>
+                                <input type="text" name="prenom" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
                             </div>
                             <div>
                                 <label class="block text-gray-700 mb-2">Email</label>
-                                <input type="email" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
+                                <input type="email" name="email" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
                             </div>
                             <div>
                                 <label class="block text-gray-700 mb-2">Rôle</label>
-                                <select class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
-                                    <option value="student">Étudiant</option>
-                                    <option value="teacher">Enseignant</option>
+                                <select name="role" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
+                                    <option value="etudiant">Étudiant</option>
+                                    <option value="Enseignant">Enseignant</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-gray-700 mb-2">Mot de passe</label>
-                                <input type="password" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
+                                <input type="password" name="password1"  class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
                             </div>
                             <div>
                                 <label class="block text-gray-700 mb-2">Confirmer le mot de passe</label>
-                                <input type="password" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
+                                <input type="password" name="confirmerMotDePasse" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
                             </div>
-                            <button type="submit" class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                            <button type="submit" name="inscription"  class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
                                 S'inscrire
                             </button>
+                            <?php if (isset($message)): ?>
+                    <p class="text-red-500 mt-4"><?php echo $message; ?></p>
+                <?php endif; ?>
                         </form>
                     </div>
                 </div>
