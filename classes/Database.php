@@ -15,10 +15,8 @@ class Database {
 
     public static function getInstance($dsn = null, $username = null, $password = null) {
         if (self::$instance === null) {
-            $dsn = $dsn ?? 'mysql:host=localhost;dbname=your_database_name';
-            $username = $username ?? 'your_username';
-            $password = $password ?? 'your_password';
-            self::$instance = new Database($dsn, $username, $password);
+            $config = require __DIR__ . '/../config/db_config.php';
+            self::$instance = new Database($config['dsn'], $config['username'], $config['password']);
         }
         return self::$instance;
     }
