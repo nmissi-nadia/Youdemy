@@ -1,8 +1,5 @@
 <?php
-    require_once './User.php';
-    require_once './Database.php';
-    
-
+  
     class Enseignant extends User {
 // connexion
         public static function login($email, $password) {

@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . './../config/db_config.php';
 
-class User {
+abstract class User {
     protected int $id;
     protected string $nom;
     protected string $prenom;

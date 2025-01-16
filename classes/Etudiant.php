@@ -1,9 +1,7 @@
 <?php
 
-require_once './User.php';
-require_once './Database.php';
 
-    class Etudient extends User {
+    class Etudiant extends User {
 
             public static function login($email, $password) {
                 $db = Database::getInstance();
