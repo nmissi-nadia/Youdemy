@@ -1,3 +1,16 @@
+<?php
+    session_start();
+    require_once '../../classes/Database.php';
+    require_once '../../classes/Admin.php';
+
+    if (!isset($_SESSION['iduser']) || $_SESSION['user_role'] !== 'admin') {
+        header('Location: ../../home.php');
+        exit;
+    }
+
+    $admin = new Admin();
+
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -96,17 +109,6 @@
                     </div>
                 </div>
 
-                <!-- Charts -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold mb-4">Distribution des Cours</h3>
-                        <canvas id="coursesChart"></canvas>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold mb-4">Top Enseignants</h3>
-                        <canvas id="teachersChart"></canvas>
-                    </div>
-                </div>
                 <!-- Validation des comptes enseignants -->
                     <div class="bg-white p-4 rounded-lg shadow-md mb-6">
                         <h2 class="text-xl font-bold mb-4">Validation des comptes enseignants</h2>
@@ -120,21 +122,51 @@
                             </thead>
                             <tbody>
                                 <?php
-                                // Fetch pending teacher accounts
-                                $bd = Database::getInstance();
-                                $pdo = $bd->getConnection();
-                                $stmt = $pdo->query("SELECT * FROM user WHERE role = 'Enseignant' AND status = 'pending'");
-                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                    echo "<tr>";
-                                    echo "<td class='py-2'>{$row['nom']}</td>";
-                                    echo "<td class='py-2'>{$row['email']}</td>";
-                                    echo "<td class='py-2'><a href='validate_teacher.php?id={$row['iduser']}' class='bg-green-500 text-white px-4 py-2 rounded'>Valider</a></td>";
-                                    echo "</tr>";
-                                }
+                              
+                              $enseignantsEnAttente = $admin->obtenirEnseignantsEnAttente();
+                              foreach ($enseignantsEnAttente as $ligne) {
+                                  echo "<tr>";
+                                  echo "<td class='py-2'>{$ligne['nom']}</td>";
+                                  echo "<td class='py-2'>{$ligne['email']}</td>";
+                                  echo "<td class='py-2'><a href='valider_enseignant.php?id={$ligne['iduser']}' class='bg-green-500 text-white px-4 py-2 rounded'>Valider</a></td>";
+                                  echo "</tr>";
+                              }
                                 ?>
                             </tbody>
                         </table>
-            </div>
+                    </div>
+                    <!-- Gestion des utilisateurs -->
+                    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                        <h2 class="text-xl font-bold mb-4">Gestion des utilisateurs</h2>
+                        <table class="min-w-full bg-white">
+                            <thead>
+                                <tr>
+                                    <th class="py-2">Nom</th>
+                                    <th class="py-2">Email</th>
+                                    <th class="py-2">Statut</th>
+                                    <th class="py-2">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                // Fetch all users
+                                $tousLesUtilisateurs = $admin->obtenirTousLesUtilisateurs();
+                        foreach ($tousLesUtilisateurs as $ligne) {
+                            echo "<tr>";
+                            echo "<td class='py-2'>{$ligne['nom']}</td>";
+                            echo "<td class='py-2'>{$ligne['email']}</td>";
+                            echo "<td class='py-2'>{$ligne['status']}</td>";
+                            echo "<td class='py-2'>
+                                <a href='activer_utilisateur.php?id={$ligne['iduser']}' class='bg-green-500 text-white px-4 py-2 rounded'>Activer</a>
+                                <a href='suspendre_utilisateur.php?id={$ligne['iduser']}' class='bg-yellow-500 text-white px-4 py-2 rounded'>Suspendre</a>
+                                <a href='supprimer_utilisateur.php?id={$ligne['iduser']}' class='bg-red-500 text-white px-4 py-2 rounded'>Supprimer</a>
+                            </td>";
+                            echo "</tr>";
+                        }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
                 <!-- Recent Activity -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-semibold mb-4">Activités Récentes</h3>
