@@ -107,7 +107,34 @@
                         <canvas id="teachersChart"></canvas>
                     </div>
                 </div>
-
+                <!-- Validation des comptes enseignants -->
+                    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                        <h2 class="text-xl font-bold mb-4">Validation des comptes enseignants</h2>
+                        <table class="min-w-full bg-white">
+                            <thead>
+                                <tr>
+                                    <th class="py-2">Nom</th>
+                                    <th class="py-2">Email</th>
+                                    <th class="py-2">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                // Fetch pending teacher accounts
+                                $bd = Database::getInstance();
+                                $pdo = $bd->getConnection();
+                                $stmt = $pdo->query("SELECT * FROM user WHERE role = 'Enseignant' AND status = 'pending'");
+                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                    echo "<tr>";
+                                    echo "<td class='py-2'>{$row['nom']}</td>";
+                                    echo "<td class='py-2'>{$row['email']}</td>";
+                                    echo "<td class='py-2'><a href='validate_teacher.php?id={$row['iduser']}' class='bg-green-500 text-white px-4 py-2 rounded'>Valider</a></td>";
+                                    echo "</tr>";
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+            </div>
                 <!-- Recent Activity -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-semibold mb-4">Activités Récentes</h3>
