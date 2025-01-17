@@ -6,6 +6,7 @@
     <title>Youdemy - Catalogue des Cours</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="../../assets/img/yodemyicon.png" type="image/x-icon">
 </head>
 <body class="bg-gradient-to-br from-indigo-100 to-white min-h-screen">
     <!-- Navigation -->

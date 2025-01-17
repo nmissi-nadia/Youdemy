@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "Connexion réussie!";
         // Rediriger vers la page d'accueil ou tableau de bord
         if ($_SESSION['user_role'] == 'admin') {
-            header('Location: ./admin_dashboard.php');
+            header('Location: ./admin/dashboard.php');
         } elseif ($_SESSION['user_role'] == 'Enseignant') {
             header('Location: ./enseignant_dashboard.php');
         } elseif ($_SESSION['user_role'] == 'etudiant') {
@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Youdemy - Connexion/Inscription</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="/path/to/favicon.ico" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
     <style>
         .slide-enter {
