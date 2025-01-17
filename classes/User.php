@@ -54,13 +54,10 @@ abstract class User {
     public function save() {
         $bd = Database::getInstance();
         $pdo = $bd->getConnection();
-
         if ($this->id) {
-            // Update existing user
             $stmt = $pdo->prepare("UPDATE user SET nom = ?, prenom = ?, email = ?, password = ?, role = ?, status = ? WHERE iduser = ?");
             return $stmt->execute([$this->nom, $this->prenom, $this->email, $this->passwordHash, $this->role, $this->status, $this->id]);
         } else {
-            // Insert new user
             $stmt = $pdo->prepare("INSERT INTO user (nom, prenom, email, password, role) VALUES (?, ?, ?, ?, ?)");
             $result = $stmt->execute([$this->nom, $this->prenom, $this->email, $this->passwordHash, $this->role]);
             if ($result) {
