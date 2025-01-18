@@ -7,16 +7,16 @@ require_once '../classes/Admin.php';
 require_once '../classes/Etudiant.php';
 // Gestion de la soumission du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = htmlspecialchars($_POST['email']);
-    $motDePasse = htmlspecialchars($_POST['motDePasse']);
-
+    $email = htmlspecialchars($_POST['emaill']);
+    $motDePasse = htmlspecialchars($_POST['passwordd']);
+    
     try {
+       
         $utilisateur = User::signin($email, $motDePasse);
-
-        echo "Connexion réussie!";
+       
         // Rediriger vers la page d'accueil ou tableau de bord
         if ($_SESSION['user_role'] == 'admin') {
-            header('Location: ./admin/dashboard.php');
+            header('Location: ./admin/dash_admin.php');
         } elseif ($_SESSION['user_role'] == 'Enseignant') {
             header('Location: ./enseignant_dashboard.php');
         } elseif ($_SESSION['user_role'] == 'etudiant') {
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit;
     } catch (Exception $e) {
-        $message = "Échec de la connexion. Vérifiez vos informations d'identification.";
+        echo "<script>alert('Échec de la connexion. Vérifiez vos informations d'identification.')</script>";
     }
 }
 ?>
@@ -103,11 +103,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <form method="POST" action="" id="loginForm" class="space-y-6">
                             <div>
                                 <label class="block text-gray-700 mb-2">Email</label>
-                                <input type="email" name="email" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
+                                <input type="email" name="emaill" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
                             </div>
                             <div>
                                 <label class="block text-gray-700 mb-2">Mot de passe</label>
-                                <input type="password" name="motDePasse" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
+                                <input type="password" name="passwordd" class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:border-indigo-500" required>
                             </div>
                             <div class="flex items-center justify-between">
                                 <label class="flex items-center">

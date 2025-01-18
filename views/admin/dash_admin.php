@@ -3,12 +3,12 @@
     require_once '../../classes/Database.php';
     require_once '../../classes/Admin.php';
 
-    if (!isset($_SESSION['iduser']) || $_SESSION['user_role'] !== 'admin') {
-        header('Location: ../../home.php');
+    if (!isset($_SESSION['user_id']) && $_SESSION['user_role'] !== 'admin') {
+        header('Location: ../home.php');
         exit;
     }
 
-    $admin = new Admin();
+    $admin = new Admin($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email'], $_SESSION['user_role'],'');
 
 ?>
 <!DOCTYPE html>
@@ -167,6 +167,80 @@
                             </tbody>
                         </table>
                     </div>
+                    <!-- Gestion des contenus -->
+            <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                <h2 class="text-xl font-bold mb-4">Gestion des contenus</h2>
+                <!-- Cours -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Cours</h3>
+                    <table class="min-w-full bg-white">
+                        <thead>
+                            <tr>
+                                <th class="py-2">Titre</th>
+                                <th class="py-2">Catégorie</th>
+                                <th class="py-2">Tags</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            // Fetch all courses
+                            $tousLesCours = $admin->obtenirTousLesCours();
+                            foreach ($tousLesCours as $cours) {
+                                echo "<tr>";
+                                echo "<td class='py-2'>{$cours['title']}</td>";
+                                echo "<td class='py-2'>{$cours['category']}</td>";
+                                echo "<td class='py-2'>{$cours['tags']}</td>";
+                                echo "</tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Catégories -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Catégories</h3>
+                    <table class="min-w-full bg-white">
+                        <thead>
+                            <tr>
+                                <th class="py-2">Nom</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            // Fetch all categories
+                            $toutesLesCategories = $admin->obtenirToutesLesCategories();
+                            foreach ($toutesLesCategories as $categorie) {
+                                echo "<tr>";
+                                echo "<td class='py-2'>{$categorie['name']}</td>";
+                                echo "</tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Tags -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Tags</h3>
+                    <table class="min-w-full bg-white">
+                        <thead>
+                            <tr>
+                                <th class="py-2">Nom</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            // Fetch all tags
+                            $tousLesTags = $admin->obtenirTousLesTags();
+                            foreach ($tousLesTags as $tag) {
+                                echo "<tr>";
+                                echo "<td class='py-2'>{$tag['name']}</td>";
+                                echo "</tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
                 <!-- Recent Activity -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-semibold mb-4">Activités Récentes</h3>

@@ -1,18 +1,21 @@
 <?php
 
 
-abstract class User {
+class User {
     private $id;
     private $nom;
     private $prenom;
     private $email;
+    private $role;
     private $passwordHash;
 
-    public function __construct($id, $nom, $prenom, $email) {
+    public function __construct($id, $nom, $prenom, $email,$role, $passwordHash) {
         $this->id = $id;
         $this->nom = $nom;
         $this->prenom = $prenom;
         $this->email = $email;
+        $this->role = $role;
+        $this->passwordHash = $passwordHash;
     }
 
     public function __toString() {
@@ -27,7 +30,7 @@ abstract class User {
 
     // Password hashing method
     public function setPasswordHash($password) {
-        $this->passwordHash = password_hash($password, PASSWORD_BCRYPT);
+        $this->passwordHash = password_hash($password, PASSWORD_DEFAULT);
     }
 
     public function setNom(string $nom): void {
@@ -73,7 +76,7 @@ abstract class User {
         $db = Database::getInstance()->getConnection();
 
         // Prepare the SQL query
-        $stmt = $db->prepare("SELECT * FROM users WHERE nom LIKE :name OR prenom LIKE :name");
+        $stmt = $db->prepare("SELECT * FROM user WHERE nom LIKE :name OR prenom LIKE :name");
 
         // Bind the parameter for name search (using wildcards for partial match)
         $stmt->bindValue(':name', '%' . $name . '%', PDO::PARAM_STR);
@@ -105,7 +108,7 @@ abstract class User {
         $db = Database::getInstance()->getConnection();
 
         // Prepare the SQL query
-        $stmt = $db->prepare("SELECT * FROM users WHERE id = :id");
+        $stmt = $db->prepare("SELECT * FROM user WHERE id = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -127,18 +130,32 @@ abstract class User {
     // Static method to search user by email
     public static function findByEmail($email) {
         $db = Database::getInstance()->getConnection();
-        $stmt = $db->prepare("SELECT * FROM users WHERE email = :email");
+        $stmt = $db->prepare("SELECT * FROM user WHERE email = :email");
+        
         $stmt->bindParam(':email', $email, PDO::PARAM_STR);
         $stmt->execute();
+        
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
+        echo $result['password'];
         if ($result) {
-            return new User($result['id'], $result['nom'], $result['prenom'], $result['email'], $result['password']);
+            if ($result['role'] == 'Enseignant') {
+                $user = new Enseignant($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']);
+            } elseif ($result['role'] == 'etudiant') {
+                $user = new Etudiant($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']);
+            }
+             elseif ($result['role'] == 'admin') {
+                $user = new Admin($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']);
+                
+            }
+             else {
+                return null;
+            }
+
+            // $user->passwordHash = $result['password'];
+            return $user;
+            
         }
-
-        return null;
     }
-
     // Method to register a new user (signup)
     public static function signup($nom, $prenom, $email, $password) {
     // Validate email format
@@ -169,18 +186,20 @@ abstract class User {
 
     // Method to login (signin)
     public static function signin($email, $password) {
-        $user = self::findByEmail($email);
 
+        $user = self::findByEmail($email);
+    
         // Check if user exists and password is correct
         if (!$user || !password_verify($password, $user->passwordHash)) {
             throw new Exception("Invalid email or password");
         }
-        session_start();
+    
         $_SESSION['user_id'] = $user->id;
         $_SESSION['user_role'] = $user->role;
         $_SESSION['user_email'] = $user->email;
         $_SESSION['user_prenom'] = $user->prenom;
         $_SESSION['user_nom'] = $user->nom;
+    
         return $user; // Successful login
     }
 
