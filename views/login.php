@@ -13,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
        
         $utilisateur = User::signin($email, $motDePasse);
-       
         // Rediriger vers la page d'accueil ou tableau de bord
         if ($_SESSION['user_role'] == 'admin') {
             header('Location: ./admin/dash_admin.php');

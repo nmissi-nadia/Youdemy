@@ -158,48 +158,48 @@ class User {
     // Method to register a new user (signup)
     public static function signup($nom, $prenom, $email,$role, $password) {
     // Validate email format
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        throw new Exception("Invalid email format");
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    throw new Exception("Invalid email format");
+                }
+
+                // Validate password length
+                if (strlen($password) < 6) {
+                    throw new Exception("Password must be at least 6 characters long");
+                }
+
+                // Sanitize name fields
+                $nom = htmlspecialchars($nom);
+                $prenom = htmlspecialchars($prenom);
+
+                // Check if email already exists
+                if (self::findByEmail($email)) {
+                    throw new Exception("Email deja existe");
+                }
+
+                // Create a new user object
+                $user = new User( $nom, $prenom, $email,$role, $password);
+                $user->setPasswordHash($password); // Hash the password
+                return $user->save();
     }
-
-    // Validate password length
-    if (strlen($password) < 6) {
-        throw new Exception("Password must be at least 6 characters long");
-    }
-
-    // Sanitize name fields
-    $nom = htmlspecialchars($nom);
-    $prenom = htmlspecialchars($prenom);
-
-    // Check if email already exists
-    if (self::findByEmail($email)) {
-        throw new Exception("Email is already registered");
-    }
-
-    // Create a new user object
-    $user = new User( $nom, $prenom, $email,$role,'');
-    $user->setPasswordHash($password); // Hash the password
-    return $user->save();
-}
 
 
     // Method to login (signin)
     public static function signin($email, $password) {
 
-        $user = self::findByEmail($email);
-    
-        // Check if user exists and password is correct
-        if (!$user || !password_verify($password, $user->passwordHash)) {
-            throw new Exception("Invalid email or password");
-        }
-    
-        $_SESSION['user_id'] = $user->id;
-        $_SESSION['user_role'] = $user->role;
-        $_SESSION['user_email'] = $user->email;
-        $_SESSION['user_prenom'] = $user->prenom;
-        $_SESSION['user_nom'] = $user->nom;
-    
-        return $user; // Successful login
+                $user = self::findByEmail($email);
+            
+                // Check if user exists and password is correct
+                if (!$user || !password_verify($password, $user->passwordHash)) {
+                    throw new Exception("Invalid email or password");
+                }
+            
+                $_SESSION['user_id'] = $user->id;
+                $_SESSION['user_role'] = $user->role;
+                $_SESSION['user_email'] = $user->email;
+                $_SESSION['user_prenom'] = $user->prenom;
+                $_SESSION['user_nom'] = $user->nom;
+            
+                return $user; // Successful login
     }
 
     // Method to change the user's password

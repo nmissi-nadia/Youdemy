@@ -5,8 +5,8 @@ require_once 'Database.php';
     class Etudiant extends User {
 
 
-        public function __construct($id, $nom, $prenom, $email) {
-            parent::__construct($id, $nom, $prenom, $email);
+        public function __construct($id, $nom, $prenom,$role, $email) {
+            parent::__construct($id, $nom, $prenom,'etudiant', $email);
         }
 
 
