@@ -2,20 +2,20 @@
 
 
 class User {
-    private $id;
-    private $nom;
-    private $prenom;
-    private $email;
-    private $role;
-    private $passwordHash;
+    protected string | null $nom;
+    protected string | null $prenom;
+    protected string | null $email;
+    protected string | null $passwordHash; // Utilisé pour stocker le hash du mot de passe
+    protected string | null $role;
+    protected string | null $status;
+   
 
-    public function __construct($id, $nom, $prenom, $email,$role, $passwordHash) {
-        $this->id = $id;
+    public function __construct($nom, $prenom, $email,$role, $password) {
         $this->nom = $nom;
         $this->prenom = $prenom;
         $this->email = $email;
         $this->role = $role;
-        $this->passwordHash = $passwordHash;
+        $this->password = $password;
     }
 
     public function __toString() {
@@ -23,7 +23,6 @@ class User {
     }
 
     // Getters
-    public function getId() { return $this->id; }
     public function getNom() { return $this->nom; }
     public function getPrenom() { return $this->prenom; }
     public function getEmail() { return $this->email; }
@@ -59,10 +58,10 @@ class User {
         $pdo = $bd->getConnection();
         if ($this->id) {
             $stmt = $pdo->prepare("UPDATE user SET nom = ?, prenom = ?, email = ?, password = ?, role = ?, status = ? WHERE iduser = ?");
-            return $stmt->execute([$this->nom, $this->prenom, $this->email, $this->passwordHash, $this->role, $this->status, $this->id]);
+            return $stmt->execute([$this->nom, $this->prenom, $this->email, $this->password, $this->role, $this->status, $this->id]);
         } else {
             $stmt = $pdo->prepare("INSERT INTO user (nom, prenom, email, password, role) VALUES (?, ?, ?, ?, ?)");
-            $result = $stmt->execute([$this->nom, $this->prenom, $this->email, $this->passwordHash, $this->role]);
+            $result = $stmt->execute([$this->nom, $this->prenom, $this->email, $this->password, $this->role]);
             if ($result) {
                 $this->id = $pdo->lastInsertId();
             }
@@ -136,7 +135,7 @@ class User {
         $stmt->execute();
         
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo $result['password'];
+    
         if ($result) {
             if ($result['role'] == 'Enseignant') {
                 $user = new Enseignant($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']);
@@ -157,7 +156,7 @@ class User {
         }
     }
     // Method to register a new user (signup)
-    public static function signup($nom, $prenom, $email, $password) {
+    public static function signup($nom, $prenom, $email,$role, $password) {
     // Validate email format
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         throw new Exception("Invalid email format");
@@ -178,7 +177,7 @@ class User {
     }
 
     // Create a new user object
-    $user = new User(null, $nom, $prenom, $email);
+    $user = new User( $nom, $prenom, $email,$role,'');
     $user->setPasswordHash($password); // Hash the password
     return $user->save();
 }
