@@ -15,6 +15,9 @@ create table categorie(
     categorie varchar(255)
     
 );
+
+
+
 CREATE TABLE cours (
     idcours INT PRIMARY KEY AUTO_INCREMENT,
     titre VARCHAR(255) NOT NULL,
@@ -26,6 +29,17 @@ CREATE TABLE cours (
     dateCreation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (idcategorie) REFERENCES categorie(idcategorie),
     FOREIGN KEY (idEnseignant) REFERENCES user(iduser)
+);
+
+CREATE TABLE enrollments (
+    idcours INT NOT NULL,
+    iduser INT NOT NULL,
+    date_enrolement DATE DEFAULT CURRENT_DATE,
+    avancement ENUM('En cours', 'Terminé') DEFAULT 'En cours',
+    PRIMARY KEY (iduser, idcours),
+    UNIQUE (iduser, idcours),
+    FOREIGN KEY (idcours) REFERENCES cours(idcours) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (iduser) REFERENCES user(iduser) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 create table tag(

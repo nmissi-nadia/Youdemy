@@ -10,7 +10,14 @@
 
     $admin = new Admin($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email'], $_SESSION['user_role'],''
 );
-
+// Récupérer les statistiques
+$nombreTotalEnseignants = $admin->obtenirNombreTotalEnseignants();
+$nombreTotalCours = $admin->obtenirNombreTotalCours();
+$nombreTotalEtudiants = $admin->obtenirNombreTotalEtudiants();
+$nombreEnseignantsEnAttente = $admin->obtenirNombreEnseignantsEnAttente();
+$coursAvecPlusEtudiants = $admin->obtenirCoursAvecPlusEtudiants();
+$top3Enseignants = $admin->obtenirTop3Enseignants();
+$tousLesUtilisateurs = $admin->obtenirTousLesUtilisateurs();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -65,7 +72,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-gray-500">Enseignants</p>
-                                <p class="text-2xl font-semibold">25</p>
+                                <p class="text-2xl font-semibold"><?php echo $nombreTotalEnseignants; ?></p>
                             </div>
                         </div>
                     </div>
@@ -78,7 +85,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-gray-500">Cours</p>
-                                <p class="text-2xl font-semibold">84</p>
+                                <p class="text-2xl font-semibold"><?php echo $nombreTotalCours; ?></p>
                             </div>
                         </div>
                     </div>
@@ -91,7 +98,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-gray-500">Étudiants</p>
-                                <p class="text-2xl font-semibold">1,520</p>
+                                <p class="text-2xl font-semibold"><?php echo $nombreTotalEtudiants; ?></p>
                             </div>
                         </div>
                     </div>
@@ -104,7 +111,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-gray-500">En attente</p>
-                                <p class="text-2xl font-semibold">8</p>
+                                <p class="text-2xl font-semibold"><?php echo $nombreEnseignantsEnAttente; ?></p>
                             </div>
                         </div>
                     </div>
@@ -137,37 +144,126 @@
                         </table>
                     </div>
                     <!-- Gestion des utilisateurs -->
-                    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
-                        <h2 class="text-xl font-bold mb-4">Gestion des utilisateurs</h2>
-                        <table class="min-w-full bg-white">
-                            <thead>
-                                <tr>
-                                    <th class="py-2">Nom</th>
-                                    <th class="py-2">Email</th>
-                                    <th class="py-2">Statut</th>
-                                    <th class="py-2">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                // Fetch all users
-                                $tousLesUtilisateurs = $admin->obtenirTousLesUtilisateurs();
-                        foreach ($tousLesUtilisateurs as $ligne) {
-                            echo "<tr>";
-                            echo "<td class='py-2'>{$ligne['nom']}</td>";
-                            echo "<td class='py-2'>{$ligne['email']}</td>";
-                            echo "<td class='py-2'>{$ligne['status']}</td>";
-                            echo "<td class='py-2'>
-                                <a href='activer_utilisateur.php?id={$ligne['iduser']}' class='bg-green-500 text-white px-4 py-2 rounded'>Activer</a>
-                                <a href='suspendre_utilisateur.php?id={$ligne['iduser']}' class='bg-yellow-500 text-white px-4 py-2 rounded'>Suspendre</a>
-                                <a href='supprimer_utilisateur.php?id={$ligne['iduser']}' class='bg-red-500 text-white px-4 py-2 rounded'>Supprimer</a>
-                            </td>";
-                            echo "</tr>";
-                        }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Gestion des utilisateurs</h2>
+        <div class="relative">
+            <input type="text" 
+                   placeholder="Rechercher un utilisateur..." 
+                   class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <?php foreach ($tousLesUtilisateurs as $ligne): ?>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <img class="h-10 w-10 rounded-full" src="/api/placeholder/40/40" alt="Photo de profil">
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900"><?php echo $ligne['nom']; ?></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900"><?php echo $ligne['email']; ?></div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <?php
+                        $statusClass = match($ligne['status']) {
+                            'actif' => 'bg-green-100 text-green-800',
+                            'suspendu' => 'bg-yellow-100 text-yellow-800',
+                            default => 'bg-gray-100 text-gray-800'
+                        };
+                        ?>
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $statusClass; ?>">
+                            <?php echo $ligne['status']; ?>
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="window.location.href='activer_utilisateur.php?id=<?php echo $ligne['iduser']; ?>'"
+                                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Activer
+                            </button>
+                            <button onclick="window.location.href='suspendre_utilisateur.php?id=<?php echo $ligne['iduser']; ?>'"
+                                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                Suspendre
+                            </button>
+                            <button onclick="confirmerSuppression(<?php echo $ligne['iduser']; ?>)"
+                                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Supprimer
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Affichage de <span class="font-medium">1</span> à <span class="font-medium">10</span> sur <span class="font-medium">20</span> utilisateurs
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <span class="sr-only">Précédent</span>
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">1</a>
+                    <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600 hover:bg-blue-100">2</a>
+                    <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">3</a>
+                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <span class="sr-only">Suivant</span>
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmerSuppression(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+        window.location.href = 'supprimer_utilisateur.php?id=' + id;
+    }
+}
+</script>
                     <!-- Gestion des contenus -->
             <div class="bg-white p-4 rounded-lg shadow-md mb-6">
                 <h2 class="text-xl font-bold mb-4">Gestion des contenus</h2>

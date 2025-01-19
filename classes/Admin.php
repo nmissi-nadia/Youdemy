@@ -43,11 +43,20 @@ class Admin extends User {
         return $stmt->execute([$id]);
     }
 
+    public function obtenirNombreTotalEnseignants() {
+        $bd = Database::getInstance();
+        $pdo = $bd->getConnection();
+
+        $stmt = $pdo->query("SELECT COUNT(*) as total FROM user WHERE role = 'Enseignant'");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'];
+    }
+
     public function obtenirNombreTotalCours() {
         $bd = Database::getInstance();
         $pdo = $bd->getConnection();
 
-        $stmt = $pdo->query("SELECT COUNT(*) as total FROM course");
+        $stmt = $pdo->query("SELECT COUNT(*) as total FROM cours");
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['total'];
     }
@@ -70,18 +79,18 @@ class Admin extends User {
         return $result['total'];
     }
     
-        public function obtenirCoursAvecPlusEtudiants() {
-            $bd = Database::getInstance();
-            $pdo = $bd->getConnection();
-
-            $stmt = $pdo->query("SELECT cours.titre, COUNT(inscription.id) as total FROM cours 
-                                JOIN inscription ON cours.idcours = inscription.idcours 
-                                GROUP BY cours.idcours 
-                                ORDER BY total DESC 
-                                LIMIT 1");
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $result;
-        }
+    public function obtenirCoursAvecPlusEtudiants() {
+        $bd = Database::getInstance();
+        $pdo = $bd->getConnection();
+    
+        $stmt = $pdo->query("SELECT cours.titre, COUNT(enrollments.iduser) as total FROM cours 
+                             JOIN enrollments ON cours.idcours = enrollments.idcours 
+                             GROUP BY cours.idcours, cours.titre 
+                             ORDER BY total DESC 
+                             LIMIT 1");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result;
+    }
 
         public function obtenirTop3Enseignants() {
             $bd = Database::getInstance();
@@ -95,5 +104,6 @@ class Admin extends User {
                                  LIMIT 3");
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
+       
 }
 ?>

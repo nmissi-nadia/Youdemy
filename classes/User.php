@@ -213,6 +213,59 @@ class User {
         $stmt->execute();
     }
 
+    public static function obtenirTousLesCours() {
+        try {
+            $db = Database::getInstance()->getConnection();
+    
+            // Préparation de la requête pour récupérer tous les cours
+            $stmt = $db->prepare("SELECT cours.idcours, cours.titre, cours.description, cours.documentation, cours.path_vedio, cours.dateCreation, user.nom AS enseignant_nom, user.prenom AS enseignant_prenom, categorie.categorie 
+                                  FROM cours
+                                  INNER JOIN user ON cours.idEnseignant = user.iduser
+                                  INNER JOIN categorie ON cours.idcategorie = categorie.idcategorie");
+            $stmt->execute();
+    
+            // Récupération des résultats
+            $cours = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+            return $cours;
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors de la récupération des cours : " . $e->getMessage());
+        }
+    }
+
+    public static function obtenirToutesLesCategories() {
+        try {
+            $db = Database::getInstance()->getConnection();
+    
+            $stmt = $db->prepare("SELECT * FROM categorie");
+            $stmt->execute();
+    
+            $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+            return $categories;
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors de la récupération des catégories : " . $e->getMessage());
+        }
+    }
+
+    public static function obtenirTousLesTags() {
+        try {
+            $db = Database::getInstance()->getConnection();
+    
+            // Préparation de la requête pour récupérer tous les tags
+            $stmt = $db->prepare("SELECT * FROM tag");
+            $stmt->execute();
+    
+            // Récupération des résultats
+            $tags = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+            return $tags;
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors de la récupération des tags : " . $e->getMessage());
+        }
+    }
+    
+    
 
     
 }
