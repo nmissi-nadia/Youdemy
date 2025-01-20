@@ -60,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Récupération des données pour le dashboard
 $statistiques = $enseignant->recupererStatistiques();
 $mesCours = $enseignant->mesCours();
+$categorie=$enseignant->obtenirToutesLesCategories();
 
 ?>
 <!DOCTYPE html>
@@ -79,9 +80,9 @@ $mesCours = $enseignant->mesCours();
                 <div class="flex items-center">
                     <div class="text-xl font-bold">Youdemy</div>
                     <div class="ml-10 space-x-4">
-                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium bg-indigo-700">Tableau de bord</a>
-                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Mes cours</a>
-                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Statistiques</a>
+                        <a href="?section=tableau-de-bord" class="px-3 py-2 rounded-md text-sm font-medium bg-indigo-700">Tableau de bord</a>
+                        <a href="?section=mes-cours" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Mes cours</a>
+                        <a href="?section=statistiques" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Statistiques</a>
                     </div>
                 </div>
                 <div class="flex items-center">
@@ -107,77 +108,22 @@ $mesCours = $enseignant->mesCours();
 
     <!-- Contenu principal -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Stats rapides -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <?php foreach ($statistiques as $stat): ?>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center">
-                    <div class="ml-4">
-                        <div class="text-sm text-gray-500"><?php echo htmlspecialchars($stat['titre']); ?></div>
-                        <div class="text-2xl font-semibold"><?php echo htmlspecialchars($stat['nb_inscriptions']); ?></div>
-                    </div>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
+        
 
-        <!-- Liste des cours -->
-        <div class="bg-white rounded-lg shadow">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-semibold">Mes cours</h2>
-                    <button onclick="document.getElementById('modalAjoutCours').classList.remove('hidden')" 
-                            class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                        <i class="fas fa-plus mr-2"></i>Nouveau cours
-                    </button>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Titre</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Étudiants</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($mesCours as $cours): ?>
-                        <tr>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center">
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium"><?php echo htmlspecialchars($cours['titre']); ?></div>
-                                        <div class="text-sm text-gray-500"><?php echo htmlspecialchars($cours['description']); ?></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm"><?php echo $cours['nbre_inscriptions']; ?> étudiants</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <form method="POST" class="inline">
-                                    <input type="hidden" name="cours_id" value="<?php echo $cours['idcours']; ?>">
-                                    <button type="button" 
-                                            onclick="modifierCours(<?php echo htmlspecialchars(json_encode($cours)); ?>)" 
-                                            class="text-indigo-600 hover:text-indigo-900 mr-3">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="submit" 
-                                            name="action" 
-                                            value="supprimerCours" 
-                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')"
-                                            class="text-red-600 hover:text-red-900">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <?php
+$section = isset($_GET['section']) ? $_GET['section'] : 'tableau-de-bord';
+
+switch ($section) {
+    case 'mes-cours':
+        include 'mes-cours.php';
+        break;
+    case 'statistiques':
+        include 'statistique.php';
+        break;
+    case 'tableau-de-bord':
+    
+}
+?>
     </div>
 
     <!-- Modal Ajout/Modification Cours -->
@@ -203,9 +149,11 @@ $mesCours = $enseignant->mesCours();
                     <label class="block text-sm font-medium text-gray-700">Catégorie</label>
                     <select name="categorie" id="categorie" required 
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                        <option value="web">Développement Web</option>
-                        <option value="mobile">Développement Mobile</option>
-                        <option value="data">Data Science</option>
+                        <?php foreach ($categorie as $cat) : ?>
+                            <option value="<?= htmlspecialchars($cat['idcategorie']) ?>">
+                                <?= htmlspecialchars($cat['categorie']) ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
