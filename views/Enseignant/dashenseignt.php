@@ -5,10 +5,10 @@ require_once '../../classes/User.php';
 require_once '../../classes/Enseignant.php';
 
 // // Vérifier si l'utilisateur est connecté et est un enseignant
-// if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Enseignant') {
-//     header('Location: ../login.php');
-//     exit();
-// }
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Enseignant') {
+    header('Location: ../login.php');
+    exit();
+}
 
 // Récupérer l'instance de l'enseignant
 $enseignant = new Enseignant($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email'], $_SESSION['user_role'],'');

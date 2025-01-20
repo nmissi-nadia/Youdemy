@@ -182,23 +182,17 @@ class User {
 
     // Method to login (signin)
     public static function signin($email, $password) {
-        echo "<script>alert('test1')</script>";
                 $user = self::findByEmail($email);
                 print_r($user);
-                echo "<script>alert('test3')</script>";
-                echo '<script>alert("'.$user->passwordHash.'")</script>';
                 // Check if user exists and password is correct
                 if (!password_verify($password, $user->passwordHash)) {
-                    echo "<script>alert('test4')</script>";
                     throw new Exception("Invalid email or password");
                 }
-                echo "<script>alert('test5')</script>";
                 $_SESSION['user_id'] = $user->id;
                 $_SESSION['user_role'] = $user->role;
                 $_SESSION['user_email'] = $user->email;
                 $_SESSION['user_prenom'] = $user->prenom;
                 $_SESSION['user_nom'] = $user->nom;
-                echo "<script>alert('test7')</script>";
                 return $user; // Successful login
     }
 
