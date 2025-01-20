@@ -91,30 +91,13 @@ $mesCours = $enseignant->mesCours();
                     </button>
                     <div class="ml-4 flex items-center">
                         <img class="h-8 w-8 rounded-full" src="/api/placeholder/32/32" alt="Profile">
-                        <span class="ml-2">Prof. Martin</span>
+                        <span class="ml-2">Prof. <?php echo $_SESSION['user_nom']; ?></span>
                     </div>
                 </div>
             </div>
         </div>
     </nav>  
-    <!-- Affichage des messages de succès/erreur -->
-    <?php if (isset($_GET['success'])): ?>
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-            <?php
-            switch ($_GET['success']) {
-                case 'cours_ajoute':
-                    echo "Le cours a été ajouté avec succès.";
-                    break;
-                case 'cours_modifie':
-                    echo "Le cours a été modifié avec succès.";
-                    break;
-                case 'cours_supprime':
-                    echo "Le cours a été supprimé avec succès.";
-                    break;
-            }
-            ?>
-        </div>
-    <?php endif; ?>
+
 
     <?php if (isset($error)): ?>
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
@@ -170,11 +153,11 @@ $mesCours = $enseignant->mesCours();
                                 </div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm"><?php echo htmlspecialchars($cours['nb_inscriptions']); ?> étudiants</div>
+                                <div class="text-sm"><?php echo $cours['nbre_inscriptions']; ?> étudiants</div>
                             </td>
                             <td class="px-6 py-4">
                                 <form method="POST" class="inline">
-                                    <input type="hidden" name="cours_id" value="<?php echo $cours['id']; ?>">
+                                    <input type="hidden" name="cours_id" value="<?php echo $cours['idcours']; ?>">
                                     <button type="button" 
                                             onclick="modifierCours(<?php echo htmlspecialchars(json_encode($cours)); ?>)" 
                                             class="text-indigo-600 hover:text-indigo-900 mr-3">
@@ -256,7 +239,7 @@ $mesCours = $enseignant->mesCours();
     <script>
     function modifierCours(cours) {
         document.querySelector('input[name="action"]').value = 'modifierCours';
-        document.getElementById('cours_id').value = cours.id;
+        document.getElementById('cours_id').value = ;
         document.getElementById('titre').value = cours.titre;
         document.getElementById('description').value = cours.description;
         document.getElementById('categorie').value = cours.categorie;

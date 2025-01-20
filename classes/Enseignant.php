@@ -83,38 +83,38 @@
          * Récupérer les statistiques des cours
          */
         public function recupererStatistiques()
-{
-    try {
-        // Connexion à la base de données via singleton
-        $db = Database::getInstance()->getConnection();
+            {
+                try {
+                    // Connexion à la base de données via singleton
+                    $db = Database::getInstance()->getConnection();
 
-        // Requête SQL
-        $query = "
-            SELECT 
-                c.idcours, c.titre, COUNT(ci.iduser) AS nb_inscriptions
-            FROM 
-                cours c
-            LEFT JOIN 
-                enrollments ci ON c.idcours = ci.idcours
-            WHERE 
-                c.idEnseignant = ?
-            GROUP BY 
-                c.idcours, c.titre
-        ";
+                    // Requête SQL
+                    $query = "
+                        SELECT 
+                            c.idcours, c.titre, COUNT(ci.iduser) AS nb_inscriptions
+                        FROM 
+                            cours c
+                        LEFT JOIN 
+                            enrollments ci ON c.idcours = ci.idcours
+                        WHERE 
+                            c.idEnseignant = ?
+                        GROUP BY 
+                            c.idcours, c.titre
+                    ";
 
-        $stmt = $db->prepare($query);
-        $stmt->bindValue(1, $this->id, PDO::PARAM_INT);
+                    $stmt = $db->prepare($query);
+                    $stmt->bindValue(1, $this->id, PDO::PARAM_INT);
 
-        $stmt->execute();
+                    $stmt->execute();
 
-        $statistiques = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    $statistiques = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $statistiques;
-    } catch (PDOException $e) {
-        // Gestion des erreurs
-        throw new Exception("Erreur lors de la récupération des statistiques : " . $e->getMessage());
-    }
-}
+                    return $statistiques;
+                } catch (PDOException $e) {
+                    // Gestion des erreurs
+                    throw new Exception("Erreur lors de la récupération des statistiques : " . $e->getMessage());
+                }
+            }
 
     
         /**
@@ -139,24 +139,44 @@
          * Récupérer les cours d'un enseignant
          */
         public function mesCours()
-            {
-                try {
+        {
+            try {
+                $db = Database::getInstance()->getConnection();
 
-                    $db = Database::getInstance()->getConnection();
+                $query = "
+                    SELECT 
+                        cours.idcours,
+                        cours.titre,
+                        cours.description,
+                        cours.dateCreation,
+                        COUNT(enrollments.iduser) AS nbre_inscriptions
+                    FROM 
+                        cours
+                    LEFT JOIN 
+                        enrollments ON cours.idcours = enrollments.idcours
+                    WHERE 
+                        cours.idEnseignant = ?
+                    GROUP BY 
+                        cours.idcours;
+                ";
 
-                    $query = "SELECT * FROM cours WHERE idEnseignant = ?";
-                    $stmt = $db->prepare($query);
+                $stmt = $db->prepare($query);
 
-                    $stmt->bindValue(1, $this->id, PDO::PARAM_INT);
-                    $stmt->execute();
-                    $cours = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                // Remplacement du paramètre par l'ID de l'enseignant
+                $stmt->bindValue(1, $this->id, PDO::PARAM_INT);
 
-                    return $cours;
-                } catch (PDOException $e) {
-                    throw new Exception("Erreur lors de la récupération des cours : " . $e->getMessage());
-                }
+                // Exécution de la requête
+                $stmt->execute();
+
+                // Récupération des résultats
+                $cours = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                return $cours;
+
+            } catch (PDOException $e) {
+                throw new Exception("Erreur lors de la récupération des cours : " . $e->getMessage());
             }
-
+        }
 
     }
 
