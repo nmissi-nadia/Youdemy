@@ -13,13 +13,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
        
         $utilisateur = User::signin($email, $motDePasse);
+        echo "<script>alert('test6')</script>";
         // Rediriger vers la page d'accueil ou tableau de bord
         if ($_SESSION['user_role'] == 'admin') {
+            echo "<script>alert('hello admin')</script>";
             header('Location: ./admin/dash_admin.php');
         } elseif ($_SESSION['user_role'] == 'Enseignant') {
-            header('Location: ./enseignant_dashboard.php');
+            echo "<script>alert('hello teacher')</script>";
+            header('Location: ./Enseignant/dashenseignt.php');
         } elseif ($_SESSION['user_role'] == 'etudiant') {
-            header('Location: ./etudiant_dashboard.php');
+            echo "<script>alert('hello etudiant')</script>";
+            header('Location: ./Etudiant/etudiant.php');
         }
         exit;
     } catch (Exception $e) {

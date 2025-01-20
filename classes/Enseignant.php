@@ -1,16 +1,18 @@
 <?php
+    require_once 'User.php';
+    require_once 'Database.php';
   
     class Enseignant extends User {
 
         // methode pour inscription 
-        public function __construct($id, $nom, $prenom, $email,$role) {
-            parent::__construct($id, $nom, $prenom, $email,'Enseignant');
+        public function __construct($id, $nom, $prenom, $email,$role ,$passwordHash) {
+            parent::__construct($id, $nom, $prenom, $email,'Enseignant',$passwordHash );
         }
     
         /**
          * Ajouter un cours
          */
-        public function ajouterCours($titre, $description, $contenu, $tags = [], $categorie)
+        public function ajouterCours($titre, $description, $contenu, $categorie, $tags = [])
         {
             $db = Database::getConnection();
             $query = "INSERT INTO cours (titre, description, contenu, categorie, enseignant_id) VALUES (?, ?, ?, ?, ?)";
@@ -46,7 +48,7 @@
         /**
          * Modifier un cours
          */
-        public function modifierCours($idCours, $titre, $description, $contenu, $tags = [], $categorie)
+        public function modifierCours($idCours, $titre, $description, $contenu, $categorie ,$tags = [])
         {
             $db = Database::getConnection();
             $query = "UPDATE cours SET titre = ?, description = ?, contenu = ?, categorie = ? WHERE id = ? AND enseignant_id = ?";
@@ -81,32 +83,39 @@
          * Récupérer les statistiques des cours
          */
         public function recupererStatistiques()
-        {
-            $db = Database::getConnection();
-            $query = "
-                SELECT 
-                    c.id, c.titre, COUNT(ci.id_etudiant) AS nb_inscriptions
-                FROM 
-                    cours c
-                LEFT JOIN 
-                    cours_inscriptions ci ON c.id = ci.id_cours
-                WHERE 
-                    c.enseignant_id = ?
-                GROUP BY 
-                    c.id, c.titre
-            ";
-            $stmt = $db->prepare($query);
-            $stmt->bind_param("i", $this->id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-    
-            $statistiques = [];
-            while ($row = $result->fetch_assoc()) {
-                $statistiques[] = $row;
-            }
-    
-            return $statistiques;
-        }
+{
+    try {
+        // Connexion à la base de données via singleton
+        $db = Database::getInstance()->getConnection();
+
+        // Requête SQL
+        $query = "
+            SELECT 
+                c.idcours, c.titre, COUNT(ci.iduser) AS nb_inscriptions
+            FROM 
+                cours c
+            LEFT JOIN 
+                enrollments ci ON c.idcours = ci.idcours
+            WHERE 
+                c.idEnseignant = ?
+            GROUP BY 
+                c.idcours, c.titre
+        ";
+
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(1, $this->id, PDO::PARAM_INT);
+
+        $stmt->execute();
+
+        $statistiques = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $statistiques;
+    } catch (PDOException $e) {
+        // Gestion des erreurs
+        throw new Exception("Erreur lors de la récupération des statistiques : " . $e->getMessage());
+    }
+}
+
     
         /**
          * Mettre à jour les tags d'un cours
@@ -130,21 +139,24 @@
          * Récupérer les cours d'un enseignant
          */
         public function mesCours()
-        {
-            $db = Database::getConnection();
-            $query = "SELECT * FROM cours WHERE enseignant_id = ?";
-            $stmt = $db->prepare($query);
-            $stmt->bind_param("i", $this->id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-    
-            $cours = [];
-            while ($row = $result->fetch_assoc()) {
-                $cours[] = $row;
+            {
+                try {
+
+                    $db = Database::getInstance()->getConnection();
+
+                    $query = "SELECT * FROM cours WHERE idEnseignant = ?";
+                    $stmt = $db->prepare($query);
+
+                    $stmt->bindValue(1, $this->id, PDO::PARAM_INT);
+                    $stmt->execute();
+                    $cours = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    return $cours;
+                } catch (PDOException $e) {
+                    throw new Exception("Erreur lors de la récupération des cours : " . $e->getMessage());
+                }
             }
-    
-            return $cours;
-        }
+
 
     }
 

@@ -42,6 +42,8 @@ CREATE TABLE enrollments (
     FOREIGN KEY (iduser) REFERENCES user(iduser) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+
+
 create table tag(
     idtag int primary key AUTO_INCREMENT,
     tag varchar(255)

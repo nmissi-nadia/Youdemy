@@ -2,6 +2,7 @@
 
 
 class User {
+    protected int | null $id;
     protected string | null $nom;
     protected string | null $prenom;
     protected string | null $email;
@@ -10,14 +11,14 @@ class User {
     protected string | null $status;
    
 
-    public function __construct($nom, $prenom, $email,$role, $password) {
+    public function __construct($id, $nom, $prenom, $email, $role, $password) {
+        $this->id = $id;
         $this->nom = $nom;
         $this->prenom = $prenom;
         $this->email = $email;
         $this->role = $role;
-        $this->password = $password;
+        $this->passwordHash=$password;
     }
-
     public function __toString() {
         return $this->nom . " " . $this->prenom;
     }
@@ -52,16 +53,20 @@ class User {
     public function setStatus(string $status): void {
         $this->status = $status;
     }
+
+    public function getPasswordHash(): ?string {
+        return $this->passwordHash;
+    }
     // Save user to the database
     public function save() {
         $bd = Database::getInstance();
         $pdo = $bd->getConnection();
         if ($this->id) {
             $stmt = $pdo->prepare("UPDATE user SET nom = ?, prenom = ?, email = ?, password = ?, role = ?, status = ? WHERE iduser = ?");
-            return $stmt->execute([$this->nom, $this->prenom, $this->email, $this->password, $this->role, $this->status, $this->id]);
+            return $stmt->execute([$this->nom, $this->prenom, $this->email, $this->passwordHash, $this->role, $this->status, $this->id]);
         } else {
             $stmt = $pdo->prepare("INSERT INTO user (nom, prenom, email, password, role) VALUES (?, ?, ?, ?, ?)");
-            $result = $stmt->execute([$this->nom, $this->prenom, $this->email, $this->password, $this->role]);
+            $result = $stmt->execute([$this->nom, $this->prenom, $this->email, $this->passwordHash, $this->role]);
             if ($result) {
                 $this->id = $pdo->lastInsertId();
             }
@@ -74,19 +79,10 @@ class User {
     {
         $db = Database::getInstance()->getConnection();
 
-        // Prepare the SQL query
         $stmt = $db->prepare("SELECT * FROM user WHERE nom LIKE :name OR prenom LIKE :name");
-
-        // Bind the parameter for name search (using wildcards for partial match)
         $stmt->bindValue(':name', '%' . $name . '%', PDO::PARAM_STR);
-
-        // Execute the query
         $stmt->execute();
-
-        // Fetch all matching users
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Return an array of User objects
         $users = [];
         foreach ($results as $result) {
             $users[] = new User(
@@ -94,6 +90,7 @@ class User {
                 $result['nom'],
                 $result['prenom'],
                 $result['email'],
+                $result['role'],
                 $result['password']
             );
         }
@@ -108,7 +105,7 @@ class User {
 
         // Prepare the SQL query
         $stmt = $db->prepare("SELECT * FROM user WHERE id = :id");
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -130,34 +127,34 @@ class User {
     public static function findByEmail($email) {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("SELECT * FROM user WHERE email = :email");
-        
         $stmt->bindParam(':email', $email, PDO::PARAM_STR);
         $stmt->execute();
-        
+        echo "<script>alert('test2')</script>";
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    
+        echo "<script>console.log(" . json_encode($result) . ");</script>";
         if ($result) {
             if ($result['role'] == 'Enseignant') {
+                echo "<script>alert('enseignat')</script>";
                 $user = new Enseignant($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']);
             } elseif ($result['role'] == 'etudiant') {
                 $user = new Etudiant($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']);
-            }
-             elseif ($result['role'] == 'admin') {
-                $user = new Admin($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']);
                 
+            }elseif ($result['role'] == 'admin') {
+                $user = new Admin($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']); 
             }
-             else {
-                return null;
-            }
-
-            // $user->passwordHash = $result['password'];
+            
+            if(!$user)
+                echo "<script>alert(' error');</script>";
+            else
+                echo "<script>alert('good');</script>";
+            
             return $user;
             
         }
     }
     // Method to register a new user (signup)
     public static function signup($nom, $prenom, $email,$role, $password) {
-    // Validate email format
+   
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     throw new Exception("Invalid email format");
                 }
@@ -177,28 +174,31 @@ class User {
                 }
 
                 // Create a new user object
-                $user = new User( $nom, $prenom, $email,$role, $password);
-                $user->setPasswordHash($password); // Hash the password
+                $user = new User( null,$nom, $prenom, $email,$role, $password);
+                 $user->setPasswordHash($password); // Hash the password
                 return $user->save();
     }
 
 
     // Method to login (signin)
     public static function signin($email, $password) {
-
+        echo "<script>alert('test1')</script>";
                 $user = self::findByEmail($email);
-            
+                print_r($user);
+                echo "<script>alert('test3')</script>";
+                echo '<script>alert("'.$user->passwordHash.'")</script>';
                 // Check if user exists and password is correct
-                if (!$user || !password_verify($password, $user->passwordHash)) {
+                if (!password_verify($password, $user->passwordHash)) {
+                    echo "<script>alert('test4')</script>";
                     throw new Exception("Invalid email or password");
                 }
-            
+                echo "<script>alert('test5')</script>";
                 $_SESSION['user_id'] = $user->id;
                 $_SESSION['user_role'] = $user->role;
                 $_SESSION['user_email'] = $user->email;
                 $_SESSION['user_prenom'] = $user->prenom;
                 $_SESSION['user_nom'] = $user->nom;
-            
+                echo "<script>alert('test7')</script>";
                 return $user; // Successful login
     }
 
