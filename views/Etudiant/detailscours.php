@@ -12,8 +12,8 @@ if (!$courseId) {
 }
 
 $cours = new Cours();
-$course = $cours->obtenirCours($courseId);
-$tags = $course->getCourseTags($courseId);
+$course = $cours->obtenirCoursParId($courseId);
+$tags = $cours->obtenirTousLesTagsCours($courseId);
 ?>
 
 <!DOCTYPE html>
@@ -44,7 +44,7 @@ $tags = $course->getCourseTags($courseId);
                                     <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
                                 </svg>
                                 <span class="ml-2 text-sm text-gray-600">
-                                    <?php echo htmlspecialchars($course['prenom'] . ' ' . $course['nom']); ?>
+                                    <?php echo htmlspecialchars($course['enseignant']); ?>
                                 </span>
                             </div>
                             <div class="flex items-center">
@@ -52,7 +52,7 @@ $tags = $course->getCourseTags($courseId);
                                     <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
                                 </svg>
                                 <span class="ml-2 text-sm text-gray-600">
-                                    <?php echo htmlspecialchars($course['total_inscriptions']); ?> inscrits
+                                    <?php echo htmlspecialchars($course['nombre_etudiants_inscrits']); ?> inscrits
                                 </span>
                             </div>
                         </div>
@@ -68,7 +68,7 @@ $tags = $course->getCourseTags($courseId);
                         <div class="bg-gray-100 rounded-lg p-6 text-center w-full md:w-auto">
                             <p class="text-sm text-gray-600 mb-2">Catégorie</p>
                             <p class="text-lg font-semibold text-gray-900">
-                                <?php echo htmlspecialchars($course['categorie']); ?>
+                                <?php echo htmlspecialchars($course['nom_categorie']); ?>
                             </p>
                         </div>
                         <button 
@@ -105,6 +105,7 @@ $tags = $course->getCourseTags($courseId);
                 </div>
             </div>
         </div>
+        
     </main>
 
     <script>

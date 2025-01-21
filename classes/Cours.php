@@ -93,15 +93,21 @@ class Cours {
         }
     }
 
-    // Récupérer un cours par ID
     public function obtenirCoursParId(int $id) {
         try {
-            $requete = "SELECT c.idcours, c.titre, c.description, c.documentation, c.path_vedio AS chemin_video, c.dateCreation, 
-                        cat.categorie AS nom_categorie, CONCAT(u.prenom, ' ', u.nom) AS enseignant
-                        FROM cours c
-                        INNER JOIN categorie cat ON c.idcategorie = cat.idcategorie
-                        INNER JOIN user u ON c.idEnseignant = u.iduser
-                        WHERE c.idcours = :id";
+            $requete = "
+                SELECT c.idcours, c.titre, c.description, c.documentation, c.path_vedio AS chemin_video, 
+                       c.dateCreation, cat.categorie AS nom_categorie, 
+                       CONCAT(u.prenom, ' ', u.nom) AS enseignant,
+                       COUNT(e.iduser) AS nombre_etudiants_inscrits
+                FROM cours c
+                INNER JOIN categorie cat ON c.idcategorie = cat.idcategorie
+                INNER JOIN user u ON c.idEnseignant = u.iduser
+                LEFT JOIN enrollments e ON c.idcours = e.idcours
+                WHERE c.idcours = :id
+                GROUP BY c.idcours, c.titre, c.description, c.documentation, c.path_vedio, 
+                         c.dateCreation, cat.categorie, u.prenom, u.nom
+            ";
             $stmt = $this->baseDeDonnees->prepare($requete);
             $stmt->bindParam(":id", $id, PDO::PARAM_INT);
             $stmt->execute();
@@ -110,6 +116,7 @@ class Cours {
             throw new Exception("Erreur lors de la récupération du cours : " . $e->getMessage());
         }
     }
+    
 
    // Ajouter un nouveau cours avec des tags
 public function ajouterCours(
@@ -187,38 +194,25 @@ public function ajouterCours(
             throw new Exception("Erreur lors de la récupération des cours de l'enseignant : " . $e->getMessage());
         }
     }
-    public function obtenirCours($coursid) {
-        try {
-            $requete = "SELECT c.idcours, c.titre, c.description, c.documentation, c.path_vedio AS chemin_video, c.dateCreation, 
-                        cat.categorie AS nom_categorie
-                        FROM cours c
-                        INNER JOIN categorie cat ON c.idcategorie = cat.idcategorie
-                        WHERE c.idcours=:idcours
-                        ORDER BY c.dateCreation DESC";
-            $stmt = $this->baseDeDonnees->prepare($requete);
-            $stmt->bindParam(':idcours', $coursid, PDO::PARAM_INT);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            throw new Exception("Erreur lors de la récupération des cours de l'enseignant : " . $e->getMessage());
-        }
-    }
+
 
     public function obtenirTousLesTagsCours($coursid) {
         try {
-            $requete = "SELECT c.idcours, c.titre, c.description, c.documentation, c.path_vedio AS chemin_video, c.dateCreation, 
-                        cat.categorie AS nom_categorie
-                        FROM cours c
-                        INNER JOIN categorie cat ON c.idcategorie = cat.idcategorie
-                        WHERE c.idcours=:idcours
-                        ORDER BY c.dateCreation DESC";
+            $requete = "
+                SELECT t.idtag, t.tag AS nom_tag
+                FROM tag t
+                INNER JOIN tag_cours ct ON t.idtag = ct.idtag
+                WHERE ct.idcours = :idcours
+                ORDER BY t.tag ASC
+            ";
             $stmt = $this->baseDeDonnees->prepare($requete);
             $stmt->bindParam(':idcours', $coursid, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            throw new Exception("Erreur lors de la récupération des cours de l'enseignant : " . $e->getMessage());
+            throw new Exception("Erreur lors de la récupération des tags du cours : " . $e->getMessage());
         }
     }
+    
  
 }
