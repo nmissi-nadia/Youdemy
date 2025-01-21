@@ -187,4 +187,38 @@ public function ajouterCours(
             throw new Exception("Erreur lors de la récupération des cours de l'enseignant : " . $e->getMessage());
         }
     }
+    public function obtenirCours($coursid) {
+        try {
+            $requete = "SELECT c.idcours, c.titre, c.description, c.documentation, c.path_vedio AS chemin_video, c.dateCreation, 
+                        cat.categorie AS nom_categorie
+                        FROM cours c
+                        INNER JOIN categorie cat ON c.idcategorie = cat.idcategorie
+                        WHERE c.idcours=:idcours
+                        ORDER BY c.dateCreation DESC";
+            $stmt = $this->baseDeDonnees->prepare($requete);
+            $stmt->bindParam(':idcours', $coursid, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors de la récupération des cours de l'enseignant : " . $e->getMessage());
+        }
+    }
+
+    public function obtenirTousLesTagsCours($coursid) {
+        try {
+            $requete = "SELECT c.idcours, c.titre, c.description, c.documentation, c.path_vedio AS chemin_video, c.dateCreation, 
+                        cat.categorie AS nom_categorie
+                        FROM cours c
+                        INNER JOIN categorie cat ON c.idcategorie = cat.idcategorie
+                        WHERE c.idcours=:idcours
+                        ORDER BY c.dateCreation DESC";
+            $stmt = $this->baseDeDonnees->prepare($requete);
+            $stmt->bindParam(':idcours', $coursid, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors de la récupération des cours de l'enseignant : " . $e->getMessage());
+        }
+    }
+ 
 }

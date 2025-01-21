@@ -83,6 +83,7 @@ try {
             </form>
             <div class="cours-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php foreach ($coursCatalogue as $cours): ?>
+                    <a href="./detailscours.php?id=<?= $cours['idcours'] ?>">
                     <div class="cours-item bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
                         <h3 class="text-lg font-semibold text-gray-900 mb-2"><?php echo htmlspecialchars($cours['titre']); ?></h3>
                         <p class="text-gray-600 mb-4"><?php echo htmlspecialchars($cours['description']); ?></p>
@@ -94,6 +95,7 @@ try {
                             </button>
                         </form>
                     </div>
+                </a>
                 <?php endforeach; ?>
             </div>
         </section>

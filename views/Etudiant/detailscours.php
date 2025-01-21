@@ -1,19 +1,19 @@
 <?php
 require_once '../../classes/Database.php';
 require_once '../../classes/Etudiant.php';
-
+require_once '../../classes/Cours.php';
 
 
 // Utilisation
 $courseId = $_GET['id'] ?? null;
 if (!$courseId) {
-    header('Location: index.php');
+    header('Location: ./etudiant.php');
     exit;
 }
 
-$courseDetails = new CourseDetails();
-$course = $courseDetails->getCourseDetails($courseId);
-$tags = $courseDetails->getCourseTags($courseId);
+$cours = new Cours();
+$course = $cours->obtenirCours($courseId);
+$tags = $course->getCourseTags($courseId);
 ?>
 
 <!DOCTYPE html>
