@@ -136,16 +136,4 @@
 <script>
     
 
-    // Gestion du formulaire newsletter
-    document.querySelector('form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = e.target.querySelector('input[type="email"]').value;
-        
-        if (email) {
-            // Simulation d'envoi
-            console.log('Inscription newsletter:', email);
-            e.target.reset();
-            alert('Merci de votre inscription à la newsletter !');
-        }
-    });
 </script>

@@ -92,7 +92,23 @@ class Cours {
             throw new Exception("Erreur lors de la récupération des cours : " . $e->getMessage());
         }
     }
-
+   
+    public function modifierCours(int $id, string $titre, string $description, string $documentation, string $pathVedio) {
+        try {
+            $requete = "UPDATE cours SET titre = :titre, description = :description, 
+                        documentation = :documentation, path_vedio = :path_vedio WHERE idcours = :id";
+            $stmt = $this->baseDeDonnees->prepare($requete);
+            $stmt->bindParam(':titre', $titre);
+            $stmt->bindParam(':description', $description);
+            $stmt->bindParam(':documentation', $documentation);
+            $stmt->bindParam(':path_vedio', $pathVedio);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors de la mise à jour du cours : " . $e->getMessage());
+        }
+    }
+    
     public function obtenirCoursParId(int $id) {
         try {
             $requete = "

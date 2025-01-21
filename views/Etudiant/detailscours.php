@@ -25,7 +25,8 @@ $tags = $cours->obtenirTousLesTagsCours($courseId);
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="h-full" x-data="courseDetails()">
+<body class="h-full" x-data="courseDetails()" style="background-image: url('C:/laragon/www/Youdemy/assets/img/pack.jpg'); background-size: cover; background-repeat: no-repeat; background-position: center;"
+>
     <main class="min-h-screen bg-gray-50">
         <!-- Hero section avec les informations principales -->
         <div class="bg-white shadow">

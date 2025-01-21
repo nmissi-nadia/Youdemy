@@ -43,19 +43,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
             case 'modifier':
                 // Modifier un cours existant
-                $coursId = intval($_POST['cours_id']);
-                $titre = $_POST['titre'];
-                $description = $_POST['description'];
-                $categorieId = intval($_POST['categorie']);
-                $lienVideo = $_POST['lien_video'] ?? null;
+                $id = intval($_POST['idcours']);
+                $titre = trim($_POST['titre']);
+                $description = trim($_POST['description']);
+                $documentation = trim($_POST['documentation']);
+                $pathVedio = trim($_POST['path_vedio']);
 
-                if ($lienVideo) {
-                    $cours = new CoursVideo($titre, $description, "", $lienVideo, $categorieId, $_SESSION['user_id']);
-                } else {
-                    $cours = new CoursTexte($titre, $description, "", $_POST['contenu'], $categorieId, $_SESSION['user_id']);
+                try {
+                    $coursInstance = new Cours(); // Assurez-vous que l'objet est correctement initialisé
+                    if ($coursInstance->modifierCours($id, $titre, $description, $documentation, $pathVedio)) {
+                        echo "<p class='text-green-500'>Cours mis à jour avec succès.</p>";
+                    } else {
+                        echo "<p class='text-red-500'>Erreur lors de la mise à jour du cours.</p>";
+                    }
+                } catch (Exception $e) {
+                    echo "<p class='text-red-500'>Une erreur s'est produite : " . htmlspecialchars($e->getMessage()) . "</p>";
                 }
-                $cours->setId($coursId);
-                $cours->modifierCours();
                 break;
 
             default:
@@ -251,11 +254,11 @@ switch ($section) {
 
                     <div class="flex justify-end space-x-3">
                         <button type="button" 
-                                onclick="document.getElementById('modalModifCours').classList.add('hidden')"
+                                onclick="document.getElementById('modalModifierCours').classList.add('hidden')"
                                 class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
                             Annuler
                         </button>
-                        <button type="submit"
+                        <button type="submit" name="action" value="modifierCours"
                                 class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
                             Enregistrer
                         </button>
@@ -265,18 +268,14 @@ switch ($section) {
         </div>
 
     <script>
-    function modifierCours(cours) {
-        document.querySelector('input[name="action"]').value = 'modifierCours';
-        document.getElementById('cours_id').value = ;
-        document.getElementById('titre').value = cours.titre;
-        document.getElementById('description').value = cours.description;
-        document.getElementById('categorie').value = cours.categorie;
-        document.getElementById('tags').value = cours.tags;
-        document.getElementById('contenu').value = cours.contenu;
-        
-        document.getElementById('modalAjoutCours').classList.remove('hidden');
-        // document.getElementById('modalAjoutCours').classList.remove('hidden');
-    }
+   function ouvrirModalModifierCours(cours) {
+    document.getElementById('idcours').value = cours.idcours;
+    document.getElementById('titre').value = cours.titre;
+    document.getElementById('description').value = cours.description;
+    document.getElementById('documentation').value = cours.documentation || '';
+    document.getElementById('path_vedio').value = cours.path_vedio || '';
+    document.getElementById('modalModifierCours').classList.remove('hidden');
+}
     </script>
         <?php include '../footer.html'; ?>
 </body>
