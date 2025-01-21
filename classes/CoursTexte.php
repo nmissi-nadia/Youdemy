@@ -1,6 +1,6 @@
 <?php
 require_once 'Cours.php';
-
+require_once  'Database.php';
 class CoursTexte extends Cours {
     private string $contenuTexte;
 
@@ -36,31 +36,55 @@ class CoursTexte extends Cours {
         string $titre,
         string $description,
         string $documentation,
-        string $cheminVideo, // Non utilisé ici
+        string $cheminVideo,
         int $categorieId,
-        int $enseignantId
-    ): bool {
+        int $enseignantId,
+        array $tags
+    ) {
         try {
+            // Début de la transaction
+            $this->baseDeDonnees->beginTransaction();
+    
+            // Préparer les données du cours
             $this->setTitre($titre);
             $this->setDescription($description);
             $this->setDocumentation($documentation);
             $this->setCategorieId($categorieId);
             $this->setEnseignantId($enseignantId);
-
-            // Logique pour ajouter un cours texte
-            $requete = "INSERT INTO cours (titre, description, documentation, path_vedio, idcategorie, idEnseignant)
-                        VALUES (:titre, :description, :documentation, NULL, :categorieId, :enseignantId)";
-            $stmt = $this->baseDeDonnees->prepare($requete);
-            $stmt->bindParam(':titre', $this->getTitre());
-            $stmt->bindParam(':description', $this->getDescription());
-            $stmt->bindParam(':documentation', $this->getDocumentation());
-            $stmt->bindParam(':categorieId', $this->getCategorieId(), PDO::PARAM_INT);
-            $stmt->bindParam(':enseignantId', $this->getEnseignantId(), PDO::PARAM_INT);
-            return $stmt->execute();
+    
+            // Insérer le cours dans la base de données
+            $requeteCours = "INSERT INTO cours (titre, description, documentation, path_vedio, idcategorie, idEnseignant)
+                             VALUES (:titre, :description, :documentation, NULL, :categorieId, :enseignantId)";
+            $stmtCours = $this->baseDeDonnees->prepare($requeteCours);
+            $stmtCours->bindValue(':titre', $this->getTitre());
+            $stmtCours->bindValue(':description', $this->getDescription());
+            $stmtCours->bindValue(':documentation', $this->getDocumentation());
+            $stmtCours->bindValue(':categorieId', $this->getCategorieId(), PDO::PARAM_INT);
+            $stmtCours->bindValue(':enseignantId', $this->getEnseignantId(), PDO::PARAM_INT);
+            $stmtCours->execute();
+    
+            // Récupération de l'ID du cours nouvellement inséré
+            $idCours = $this->baseDeDonnees->lastInsertId();
+    
+            // Insertion des tags associés au cours
+            $requeteTag = "INSERT INTO tag_cours (idcours, idtag) VALUES (:idCours, :idTag)";
+            $stmtTag = $this->baseDeDonnees->prepare($requeteTag);
+            foreach ($tags as $idTag) {
+                $stmtTag->bindParam(':idCours', $idCours, PDO::PARAM_INT);
+                $stmtTag->bindParam(':idTag', $idTag, PDO::PARAM_INT);
+                $stmtTag->execute();
+            }
+    
+            // Validation de la transaction
+            $this->baseDeDonnees->commit();
+            return true;
         } catch (PDOException $e) {
-            throw new Exception("Erreur lors de l'ajout du cours texte : " . $e->getMessage());
+            // Annulation de la transaction en cas d'erreur
+            $this->baseDeDonnees->rollBack();
+            throw new Exception("Erreur lors de l'ajout du cours texte et des tags : " . $e->getMessage());
         }
     }
+    
 
     // Surcharge de la méthode afficher les détails du cours
     public function afficherCours(): string {

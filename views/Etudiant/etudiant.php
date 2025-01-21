@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'etudiant') {
 }
 
 // Création de l'objet étudiant
-$etudiant = new Etudiant($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email']);
+$etudiant = new Etudiant($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email'], $_SESSION['user_role'],'');
 
 // Gestion des actions de l'étudiant
 $coursCatalogue = [];
@@ -52,6 +52,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page Étudiant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>

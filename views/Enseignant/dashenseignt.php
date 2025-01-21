@@ -30,14 +30,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $lienVideo = $_POST['lien_video'] ?? null;
 
                 if ($lienVideo) {
-                    $coursVideo = new CoursVideo();
-                    $coursVideo->ajouterCours($titre, $description, $documentation, $cheminVideo, $categorieId, $_SESSION['user_id']);
+                    $cours = new CoursVideo($titre, $description,'', $lienVideo, $categorieId, $_SESSION['user_id']);
+                    $cours->ajouterCours($titre, $description,'', $lienVideo, $categorieId, $_SESSION['user_id'],$tags);
 
                 } else {
                     // Ajouter un cours texte
-                    $cours = new CoursTexte($titre, $description, "", $_POST['contenu'], $categorieId, $_SESSION['user_id']);
+                    $cours = new CoursTexte($titre, $description, '','', $categorieId, $_SESSION['user_id']);
+                    $cours->ajouterCours($titre, $description, '','', $categorieId, $_SESSION['user_id'],$tags);
                 }
-                $cours->ajouterCours();
+                
                 break;
 
             case 'modifier':
@@ -95,10 +96,9 @@ $categorie=$enseignant->obtenirToutesLesCategories();
                     </div>
                 </div>
                 <div class="flex items-center">
-                    <button class="ml-4 relative">
-                        <i class="fas fa-bell text-xl"></i>
-                        <span class="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 text-xs flex items-center justify-center">3</span>
-                    </button>
+                <a href="../logout.php" class="ml-4 relative text-blue-800 bg-white hover:bg-purple-100 rounded-lg px-4 py-2 text-sm font-semibold transition duration-300">
+                    Deconnexion
+                </a>
                     <div class="ml-4 flex items-center">
                         <img class="h-8 w-8 rounded-full" src="/api/placeholder/32/32" alt="Profile">
                         <span class="ml-2">Prof. <?php echo $_SESSION['user_nom']; ?></span>
