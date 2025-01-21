@@ -59,7 +59,7 @@ $tags = $cours->obtenirTousLesTagsCours($courseId);
                         <div class="flex flex-wrap gap-2">
                             <?php foreach ($tags as $tag): ?>
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    <?php echo htmlspecialchars($tag); ?>
+                                    <?php echo htmlspecialchars($tag['nom_tag']); ?>
                                 </span>
                             <?php endforeach; ?>
                         </div>
@@ -100,12 +100,14 @@ $tags = $cours->obtenirTousLesTagsCours($courseId);
                 <div class="prose max-w-none">
                     <h2 class="text-xl font-semibold mb-4">Documentation</h2>
                     <div class="bg-gray-50 rounded-lg p-6">
-                        <?php echo nl2br(htmlspecialchars($course['documentation'])); ?>
+                        <?php echo $course['documentation']; ?>
                     </div>
                 </div>
             </div>
         </div>
-        
+        <div class="flex items-center justify-center">
+            <a class="md:w-auto inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="./etudiant.php">Retour</a>
+        </div>
     </main>
 
     <script>

@@ -38,49 +38,55 @@ class CoursVideo extends Cours {
         string $titre,
         string $description,
         string $documentation,
-        string $cheminVideo, 
+        string $cheminVideo,
         int $categorieId,
-        int $enseignantId,  
+        int $enseignantId,
         array $tags
     ) {
         try {
+            // Validation des données
             $this->setTitre($titre);
             $this->setDescription($description);
             $this->setLienVideo($cheminVideo);
             $this->setCategorieId($categorieId);
             $this->setEnseignantId($enseignantId);
-
-
-            // Insertion du cours texte
+    
+            // Insertion dans la table cours
             $requeteCours = "INSERT INTO cours (titre, description, documentation, path_vedio, idcategorie, idEnseignant)
-                             VALUES (:titre, :description, NULL, :path_vedio, :categorieId, :enseignantId)";
+                             VALUES (:titre, :description, :documentation, :path_vedio, :categorieId, :enseignantId)";
             $stmtCours = $this->baseDeDonnees->prepare($requeteCours);
             $stmtCours->bindValue(':titre', $this->getTitre());
             $stmtCours->bindValue(':description', $this->getDescription());
+            $stmtCours->bindValue(':documentation', $documentation ?: null, PDO::PARAM_STR);
             $stmtCours->bindValue(':path_vedio', $this->getLienVideo());
             $stmtCours->bindValue(':categorieId', $this->getCategorieId(), PDO::PARAM_INT);
             $stmtCours->bindValue(':enseignantId', $this->getEnseignantId(), PDO::PARAM_INT);
-            $stmtCours->execute();
-
+    
+            if (!$stmtCours->execute()) {
+                throw new Exception("Erreur lors de l'insertion dans la table 'cours'.");
+            }
+    
             // Récupération de l'ID du cours nouvellement inséré
             $idCours = $this->baseDeDonnees->lastInsertId();
-
+            var_dump($tags);
             // Insertion des tags associés au cours
-            $requeteTag = "INSERT INTO tag_cours (idcours, idtag) VALUES (:idCours, :idTag)";
-            $stmtTag = $this->baseDeDonnees->prepare($requeteTag);
-            foreach ($tags as $idTag) {
-                $stmtTag->bindParam(':idCours', $idCours, PDO::PARAM_INT);
-                $stmtTag->bindParam(':idTag', $idTag, PDO::PARAM_INT);
-                $stmtTag->execute();
+            if (!empty($tags)) {
+                $requeteTag = "INSERT INTO tag_cours (idcours, idtag) VALUES (:idCours, :idTag)";
+                $stmtTag = $this->baseDeDonnees->prepare($requeteTag);
+    
+                foreach ($tags as $idTag) {
+                    $stmtTag->bindValue(':idCours', $idCours, PDO::PARAM_INT);
+                    $stmtTag->bindValue(':idTag', $idTag, PDO::PARAM_INT);
+    
+                    if (!$stmtTag->execute()) {
+                        throw new Exception("Erreur lors de l'insertion dans la table 'tag_cours' pour le tag ID : $idTag.");
+                    }
+                }
             }
-
-            // Validation de la transaction
-            $this->baseDeDonnees->commit();
+    
             return true;
         } catch (PDOException $e) {
-            // Annulation de la transaction
-            $this->baseDeDonnees->rollBack();
-            throw new Exception("Erreur lors de l'ajout du cours texte et des tags : " . $e->getMessage());
+            throw new Exception("Erreur lors de l'ajout du cours et des tags : " . $e->getMessage());
         }
     }
     

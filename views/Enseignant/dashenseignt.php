@@ -19,8 +19,8 @@ $enseignant = new Enseignant($_SESSION['user_id'], $_SESSION['user_nom'], $_SESS
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     try {
         $action = $_POST['action'];
-        $tags = isset($_POST['tags']) ? explode(',', $_POST['tags']) : [];
-
+        $tags1  = $_POST['tags'];
+        var_dump($tags1);
         switch ($action) {
             case 'ajouter':
                 // Ajouter un nouveau cours
@@ -31,12 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
                 if ($lienVideo) {
                     $cours = new CoursVideo($titre, $description,'', $lienVideo, $categorieId, $_SESSION['user_id']);
-                    $cours->ajouterCours($titre, $description,'', $lienVideo, $categorieId, $_SESSION['user_id'],$tags);
+                    $cours->ajouterCours($titre, $description,'', $lienVideo, $categorieId, $_SESSION['user_id'],$tags1);
 
                 } else {
                     // Ajouter un cours texte
                     $cours = new CoursTexte($titre, $description, '','', $categorieId, $_SESSION['user_id']);
-                    $cours->ajouterCours($titre, $description, '','', $categorieId, $_SESSION['user_id'],$tags);
+                    $cours->ajouterCours($titre, $description, '','', $categorieId, $_SESSION['user_id'],$tags1);
                 }
                 
                 break;
@@ -71,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 $statistiques = $enseignant->recupererStatistiques();
 $mesCours = $enseignant->mesCours();
 $categorie=$enseignant->obtenirToutesLesCategories();
+$tags = $enseignant->obtenirTousLesTags();
 
 ?>
 <!DOCTYPE html>
@@ -136,7 +137,7 @@ switch ($section) {
     </div>
 
     <!-- Modal Ajout Cours -->
-        <div id="modalAjoutCours" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div id="modalAjoutCours" class="hidden fixed inset-0 z-50 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
             <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                 <form method="POST" action="" class="space-y-4">
                     <input type="hidden" name="action" value="ajouter">
@@ -166,9 +167,21 @@ switch ($section) {
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Tags (séparés par des virgules)</label>
-                        <input type="text" name="tags" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <label class="block text-sm font-medium text-gray-700">Tags</label>
+                        <div class="mt-1">
+                            <?php foreach ($tags as $tag): ?>
+                                <div class="flex items-center mb-2">
+                                    <input type="checkbox" 
+                                        id="tag_<?php echo $tag['idtag']; ?>" 
+                                        name="tags[]" 
+                                        value="<?php echo $tag['idtag']; ?>" 
+                                        class="form-radio h-4 w-4 text-indigo-600">
+                                    <label for="tag_<?php echo $tag['idtag']; ?>" class="ml-2 text-sm text-gray-700">
+                                        <?php echo htmlspecialchars($tag['tag']); ?>
+                                    </label>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
 
                     <div>
