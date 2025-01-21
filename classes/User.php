@@ -129,12 +129,9 @@ class User {
         $stmt = $db->prepare("SELECT * FROM user WHERE email = :email");
         $stmt->bindParam(':email', $email, PDO::PARAM_STR);
         $stmt->execute();
-        echo "<script>alert('test2')</script>";
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo "<script>console.log(" . json_encode($result) . ");</script>";
         if ($result) {
             if ($result['role'] == 'Enseignant') {
-                echo "<script>alert('enseignat')</script>";
                 $user = new Enseignant($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']);
             } elseif ($result['role'] == 'etudiant') {
                 $user = new Etudiant($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']);
@@ -143,10 +140,6 @@ class User {
                 $user = new Admin($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']); 
             }
             
-            if(!$user)
-                echo "<script>alert(' error');</script>";
-            else
-                echo "<script>alert('good');</script>";
             
             return $user;
             

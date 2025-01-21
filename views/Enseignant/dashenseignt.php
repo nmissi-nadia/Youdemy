@@ -3,9 +3,11 @@ session_start();
 require_once '../../classes/Database.php';
 require_once '../../classes/User.php';
 require_once '../../classes/Enseignant.php';
+require_once '../../classes/CoursVideo.php';
+require_once '../../classes/CoursTexte.php';
 
-// // Vérifier si l'utilisateur est connecté et est un enseignant
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Enseignant') {
+// Vérifier si l'utilisateur est connecté et est un enseignant
+if (!isset($_SESSION['user_id']) && !isset($_SESSION['role']) !== 'Enseignant') {
     header('Location: ../login.php');
     exit();
 }
@@ -13,50 +15,57 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role
 // Récupérer l'instance de l'enseignant
 $enseignant = new Enseignant($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email'], $_SESSION['user_role'],'');
 
-// Traitement des actions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Gestion des actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     try {
-        if (isset($_POST['action'])) {
-            switch ($_POST['action']) {
-                case 'ajouterCours':
-                    $tags = explode(',', $_POST['tags']);
-                    $enseignant->ajouterCours(
-                        $_POST['titre'],
-                        $_POST['description'],
-                        $_POST['contenu'],
-                        $tags,
-                        $_POST['categorie']
-                    );
-                    header('Location: ' . $_SERVER['PHP_SELF'] . '?success=cours_ajoute');
-                    exit;
-                    break;
+        $action = $_POST['action'];
+        $tags = isset($_POST['tags']) ? explode(',', $_POST['tags']) : [];
 
-                case 'modifierCours':
-                    $tags = explode(',', $_POST['tags']);
-                    $enseignant->modifierCours(
-                        $_POST['cours_id'],
-                        $_POST['titre'],
-                        $_POST['description'],
-                        $_POST['contenu'],
-                        $tags,
-                        $_POST['categorie']
-                    );
-                    header('Location: ' . $_SERVER['PHP_SELF'] . '?success=cours_modifie');
-                    exit;
-                    break;
+        switch ($action) {
+            case 'ajouter':
+                // Ajouter un nouveau cours
+                $titre = $_POST['titre'];
+                $description = $_POST['description'];
+                $categorieId = intval($_POST['categorie']);
+                $lienVideo = $_POST['lien_video'] ?? null;
 
-                case 'supprimerCours':
-                    $enseignant->supprimerCours($_POST['cours_id']);
-                    header('Location: ' . $_SERVER['PHP_SELF'] . '?success=cours_supprime');
-                    exit;
-                    break;
-            }
+                if ($lienVideo) {
+                    $coursVideo = new CoursVideo();
+                    $coursVideo->ajouterCours($titre, $description, $documentation, $cheminVideo, $categorieId, $_SESSION['user_id']);
+
+                } else {
+                    // Ajouter un cours texte
+                    $cours = new CoursTexte($titre, $description, "", $_POST['contenu'], $categorieId, $_SESSION['user_id']);
+                }
+                $cours->ajouterCours();
+                break;
+
+            case 'modifier':
+                // Modifier un cours existant
+                $coursId = intval($_POST['cours_id']);
+                $titre = $_POST['titre'];
+                $description = $_POST['description'];
+                $categorieId = intval($_POST['categorie']);
+                $lienVideo = $_POST['lien_video'] ?? null;
+
+                if ($lienVideo) {
+                    $cours = new CoursVideo($titre, $description, "", $lienVideo, $categorieId, $_SESSION['user_id']);
+                } else {
+                    $cours = new CoursTexte($titre, $description, "", $_POST['contenu'], $categorieId, $_SESSION['user_id']);
+                }
+                $cours->setId($coursId);
+                $cours->modifierCours();
+                break;
+
+            default:
+                throw new Exception("Action non valide !");
         }
+
+        header('Location: dashenseignt.php?success=action_reussie');
     } catch (Exception $e) {
         $error = $e->getMessage();
     }
 }
-
 // Récupération des données pour le dashboard
 $statistiques = $enseignant->recupererStatistiques();
 $mesCours = $enseignant->mesCours();
@@ -126,63 +135,121 @@ switch ($section) {
 ?>
     </div>
 
-    <!-- Modal Ajout/Modification Cours -->
-    <div id="modalAjoutCours" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <form method="POST" class="space-y-4">
-                <input type="hidden" name="action" value="ajouterCours">
-                <input type="hidden" name="cours_id" id="cours_id">
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Titre</label>
-                    <input type="text" name="titre" id="titre" required 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                </div>
+    <!-- Modal Ajout Cours -->
+        <div id="modalAjoutCours" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <form method="POST" action="" class="space-y-4">
+                    <input type="hidden" name="action" value="ajouter">
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea name="description" id="description" required 
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Catégorie</label>
-                    <select name="categorie" id="categorie" required 
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Titre</label>
+                        <input type="text" name="titre" required 
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                        <?php foreach ($categorie as $cat) : ?>
-                            <option value="<?= htmlspecialchars($cat['idcategorie']) ?>">
-                                <?= htmlspecialchars($cat['categorie']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                    </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Tags (séparés par des virgules)</label>
-                    <input type="text" name="tags" id="tags"
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea name="description" required 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                    </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Contenu</label>
-                    <textarea name="contenu" id="contenu" required 
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
-                </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Catégorie</label>
+                        <select name="categorie" required 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <?php foreach ($categorie as $cat) : ?>
+                                <option value="<?= htmlspecialchars($cat['idcategorie']) ?>">
+                                    <?= htmlspecialchars($cat['categorie']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-                <div class="flex justify-end space-x-3">
-                    <button type="button" 
-                            onclick="document.getElementById('modalAjoutCours').classList.add('hidden')"
-                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
-                        Annuler
-                    </button>
-                    <button type="submit" 
-                            class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                        Enregistrer
-                    </button>
-                </div>
-            </form>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tags (séparés par des virgules)</label>
+                        <input type="text" name="tags" 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Lien Vidéo (Optionnel)</label>
+                        <input type="text" name="lien_video"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" 
+                                onclick="document.getElementById('modalAjoutCours').classList.add('hidden')"
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                            Annuler
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                            Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+
+        <!-- Modal Modifier Cours -->
+    <!-- Modal Modifier Cours -->
+        <div id="modalModifCours" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <form method="POST" action="" class="space-y-4">
+                    <input type="hidden" name="action" value="modifier">
+                    <input type="hidden" name="cours_id" id="modif_cours_id">
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Titre</label>
+                        <input type="text" name="titre" id="modif_titre" required 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea name="description" id="modif_description" required 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Catégorie</label>
+                        <select name="categorie" id="modif_categorie" required 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <?php foreach ($categorie as $cat) : ?>
+                                <option value="<?= htmlspecialchars($cat['idcategorie']) ?>">
+                                    <?= htmlspecialchars($cat['categorie']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tags (séparés par des virgules)</label>
+                        <input type="text" name="tags" id="modif_tags"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Lien Vidéo (Optionnel)</label>
+                        <input type="text" name="lien_video" id="modif_lien_video"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" 
+                                onclick="document.getElementById('modalModifCours').classList.add('hidden')"
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                            Annuler
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                            Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
     <script>
     function modifierCours(cours) {
@@ -195,6 +262,7 @@ switch ($section) {
         document.getElementById('contenu').value = cours.contenu;
         
         document.getElementById('modalAjoutCours').classList.remove('hidden');
+        // document.getElementById('modalAjoutCours').classList.remove('hidden');
     }
     </script>
         <?php include '../footer.html'; ?>
