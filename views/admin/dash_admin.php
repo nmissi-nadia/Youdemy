@@ -3,6 +3,8 @@
     require_once '../../classes/Database.php';
     require_once '../../classes/Admin.php';
     require_once '../../classes/Cours.php';
+    require_once '../../classes/Tag.php';
+    require_once '../../classes/Categorie.php';
 
     if (!isset($_SESSION['user_id']) && !isset($_SESSION['role_id']) !== 'admin') {
         header('Location: ../home.php');
@@ -19,17 +21,7 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $coursParPage = 6;
 $offset = ($page - 1) * $coursParPage;
 
-// Gestion de la suppression
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'deletecours' && isset($_POST['cours_id'])) {
-    try {
-        $coursInstance->supprimerCours($_POST['cours_id']);
-        $message = "Cours supprimé avec succès.";
-        $messageType = "success";
-    } catch (Exception $e) {
-        $message = "Erreur lors de la suppression : " . $e->getMessage();
-        $messageType = "error";
-    }
-}
+
 
 try {
     $tousLesCours = $coursInstance->obtenirTousLesCours();
@@ -73,6 +65,17 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tag = new Tag('');
         $id= $_POST["tag-id"];
         $tag->supprimeTag($id);
+    }
+    //ajout
+    if(isset($_POST["add-categorie"])) {
+        $cat = new Categorie($_POST['nom-categorie']);
+        $cat->addCategory($cat->getCategorie());
+    }
+    //delete
+    if(isset($_POST["delete-cat"])) {
+        $cat = new Categorie('');
+        $id= $_POST["cat-id"];
+        $cat->deleteCategory($id);
     }
 }
 ?>
@@ -192,7 +195,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+            <thead class="bg-indigo-100">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
@@ -205,9 +208,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <tr class="hover:bg-gray-50 transition-colors duration-200">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                <img class="h-10 w-10 rounded-full" src="/api/placeholder/40/40" alt="Photo de profil">
-                            </div>
                             <div class="ml-4">
                                 <div class="text-sm font-medium text-gray-900"><?php echo $ligne['nom']; ?></div>
                             </div>
@@ -289,48 +289,14 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
-
-<script>
-function confirmerSuppression(id) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
-        window.location.href = 'supprimer_utilisateur.php?id=' + id;
-    }
-}
-</script>
                     <!-- Gestion des contenus -->
-            <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+            <div class="bg-indigo-200 p-4 rounded-lg shadow-md mb-6">
                 <h2 class="text-xl font-bold mb-4">Gestion des contenus</h2>
-                <!-- Cours -->
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold mb-4">Cours</h3>
-                    <table class="min-w-full bg-white">
-                        <thead>
-                            <tr>
-                                <th class="py-2">Titre</th>
-                                <th class="py-2">Catégorie</th>
-                                <th class="py-2">Tags</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            // Fetch all courses
-                            $tousLesCours = $admin->obtenirTousLesCours();
-                            foreach ($tousLesCours as $cours) {
-                                echo "<tr>";
-                                echo "<td class='py-2'>{$cours['titre']}</td>";
-                                echo "<td class='py-2'>{$cours['categorie']}</td>";
-                                // echo "<td class='py-2'>{$cours['tags']}</td>";
-                                echo "</tr>";
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
                 <!-- Catégories -->
                 <div class="mb-6">
                     <h3 class="text-lg font-semibold mb-4">Catégories</h3>
-                    <table class="min-w-full bg-white">
-                        <thead>
+                    <table class="min-w-full bg-white rounded-lg">
+                        <thead class="bg-indigo-500 rounded-lg">
                             <tr>
                                 <th class="py-2">Nom</th>
                                 <th class="py-2">action</th>
@@ -343,23 +309,33 @@ function confirmerSuppression(id) {
                             foreach ($toutesLesCategories as $categorie) {
                                 echo "<tr>";
                                 echo "<td class='py-2'>{$categorie['categorie']}</td>";
-                                echo "<td class='py-2'><form method='POST' action=''>
-                                    <input name='tag-id' type='hidden' value='{$categorie['idcategorie']}'>
-                                    <button name='delete-tag' class='p-2 text-red-500 hover:bg-pink-50 rounded-lg transition duration-200 hover:scale-110' title='Supprimer'>
-                                        <i class='fas fa-trash'></i>
+                                echo "<td class='py-2 flex justify-around'>
+                                    <button onclick='openEditcatModal(\"{$categorie['idcategorie']}\", \"".htmlspecialchars($categorie['categorie'], ENT_QUOTES, 'UTF-8')."\")' 
+                                            class='p-2 text-blue-600 hover:bg-purple-50 rounded-lg transition duration-200 hover:scale-110' 
+                                            title='Modifier'>
+                                        <i class='fas fa-edit'></i>
                                     </button>
-                                </form></td>";
+                                    <form method='POST' action=''>
+                                        <input name='cat-id' type='hidden' value='{$categorie['idcategorie']}'>
+                                        <button name='delete-cat' class='p-2 text-red-500 hover:bg-pink-50 rounded-lg transition duration-200 hover:scale-110' title='Supprimer'>
+                                            <i class='fas fa-trash'></i>
+                                        </button>
+                                    </form>
+                                </td>";
                                 echo "</tr>";
                             }
                             ?>
                         </tbody>
                     </table>
+                    <section class="flex items-center justify-between gap-5 p-5">
+                        <button id="open-add-categorie" type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 ">Ajouter un Catégorie</button>
+                    </section>
                 </div>
                 <!-- Tags -->
                 <div class="mb-6">
                     <h3 class="text-lg font-semibold mb-4">Tags</h3>
                     <table class="min-w-full bg-white">
-                        <thead>
+                        <thead class="bg-indigo-500">
                             <tr>
                                 <th class="py-2">id</th>
                                 <th class="py-2">Nom</th>
@@ -368,27 +344,61 @@ function confirmerSuppression(id) {
                         </thead>
                         <tbody>
                             <?php
-                            // Fetch all tags
                             $tousLesTags = $admin->obtenirTousLesTags();
                             foreach ($tousLesTags as $tag) {
                                 echo "<tr>";
                                 echo "<td class='py-2'>{$tag['idtag']}</td>";
                                 echo "<td class='py-2'>{$tag['tag']}</td>";
-                                echo "<td class='py-2'><form method='POST' action=''>
-                                    <input name='tag-id' type='hidden' value='{$tag['idtag']}'>
-                                    <button name='delete-tag' class='p-2 text-red-500 hover:bg-pink-50 rounded-lg transition duration-200 hover:scale-110' title='Supprimer'>
-                                        <i class='fas fa-trash'></i>
+                                echo "<td class='py-2 flex justify-around'>
+                                    <button type='button' onclick='openEditModal(\"{$tag['idtag']}\", \"{$tag['tag']}\")' 
+                                            class='p-2 text-blue-600 hover:bg-purple-50 rounded-lg transition duration-200 hover:scale-110'>
+                                        <i class='fas fa-edit'></i>
                                     </button>
-                                </form></td>";
+                                    <form method='POST' action=''>
+                                        <input name='tag-id' type='hidden' value='{$tag['idtag']}'>
+                                        <button name='delete-tag' class='p-2 text-red-500 hover:bg-pink-50 rounded-lg transition duration-200 hover:scale-110' title='Supprimer'>
+                                            <i class='fas fa-trash'></i>
+                                        </button>
+                                    </form>
+                                </td>";
                                 echo "</tr>";
                             }
                             ?>
+
                         </tbody>
                     </table>
                     <section class="flex items-center justify-between gap-5 p-5">
                         <button id="open-add-tag" type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 ">Ajouter un Tag</button>
                         <button type="button" class="text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 shadow-lg shadow-purple-500/50 dark:shadow-lg dark:shadow-purple-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Ajouter Multiple Tags</button>
                     </section>
+
+                      <!-- Ajout Categorie -->
+                <div style="display: none;"  id="add-cat-form" class="z-10 fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center ">
+                    <div class="max-w-md w-full space-y-8 bg-white px-8 py-5 rounded-lg shadow-lg animate__animated animate__fadeIn">
+                        <div>
+                            <h2 class="text-center text-2xl font-extrabold text-gray-900">
+                                Nouveau Catégorie
+                            </h2>
+                        </div>
+                        <form method="POST" action="" id="addCategorieForm" class="mt-8 space-y-6">
+                            <div class="rounded-md shadow-sm flex flex-col gap-5">
+                                <div>
+                                    <label for="nom-categorie" class="sr-only">Nom</label>
+                                    <input id="nom-categorie" name="nom-categorie" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm" placeholder="Nom du Categorie">
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-10">
+                                <button type="submit" name="add-categorie" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium  text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                    Enregister
+                                </button>
+                                <button type="button" name="cancel-tag" id="cancel-tag" class="group relative w-full flex justify-center py-2 px-4 border border-gray-800 text-sm font-medium text-black bg-transparent duration-500 hover:bg-red-700 hover:border-none hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-transparent">
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
                     <!-- Ajout TAG -->
                 <div style="display: none;"  id="add-tag-form" class="z-10 fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center ">
                     <div class="max-w-md w-full space-y-8 bg-white px-8 py-5 rounded-lg shadow-lg animate__animated animate__fadeIn">
@@ -447,7 +457,6 @@ function confirmerSuppression(id) {
                         </form>
                     </div>
                 </div>
-
                 <!-- Modif TAG MODAL -->
                 <div style="display: none;" id="edit-tag-modal" class="z-10 fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center">
                     <div class="max-w-md w-full space-y-8 bg-white px-8 py-5 rounded-lg shadow-lg animate__animated animate__fadeIn">
@@ -466,7 +475,6 @@ function confirmerSuppression(id) {
                                         placeholder="Nouveau nom du tag">
                                 </div>
                             </div>
-
                             <div class="flex items-center gap-10">
                                 <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                                     Modifier
@@ -478,107 +486,143 @@ function confirmerSuppression(id) {
                         </form>
                     </div>
                 </div>
-            </div>
-                
+                <!-- Modif Categorie MODAL -->
+                <div style="display: none;" id="edit-categorie-modal" class="z-10 fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center">
+                    <div class="max-w-md w-full space-y-8 bg-white px-8 py-5 rounded-lg shadow-lg animate__animated animate__fadeIn">
+                        <div>
+                            <h2 class="text-center text-2xl font-extrabold text-gray-900">
+                                Modifier le Categorie
+                            </h2>
+                        </div>
+                        <form id="editCategorieForm" class="mt-8 space-y-6">
+                            <input type="hidden" id="edit-cat-id">
+                            <div class="rounded-md shadow-sm flex flex-col gap-5">
+                                <div>
+                                    <label for="edit-categorie-name" class="sr-only">Nom</label>
+                                    <input id="edit-categorie-name" name="edit-categorie-name" type="text" required 
+                                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm" 
+                                        placeholder="Nouveau nom du Categorie">
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-10">
+                                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                    Modifier
+                                </button>
+                                <button type="button" onclick="closeEditcatModal()" class="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>      
 <script>
-    let list = document.querySelector('#links');
-const menu = document.querySelector('#burger-menu');
-
-menu.addEventListener('click',function(){
-    list.classList.toggle('left-0');
-    list.classList.toggle('left-[-500px]');
-});
-
-
-
-const cancelButtonTag = document.querySelector('#cancel-tag');
-const TagFormContainer = document.querySelector('#add-tag-form');
-const openTagForm = document.querySelector('#open-add-tag');
-const TagForm = document.querySelector('#addTagForm');
-
-cancelButtonTag.addEventListener('click', function() {
-    TagFormContainer.style.display = 'none';
-    TagForm.reset();
-});
-
-openTagForm.addEventListener('click', function() {
-    TagFormContainer.style.display = 'flex';
-});
-
-
-const openMultipleTagsBtn = document.querySelector('button.bg-gradient-to-r.from-purple-500');
-const addMultipleTagsForm = document.getElementById('add-multiple-tags-form');
-const cancelMultipleTagsBtn = document.getElementById('cancel-multiple-tags');
-
-openMultipleTagsBtn.addEventListener('click', () => {
-    addMultipleTagsForm.style.display = 'flex';
-});
-
-cancelMultipleTagsBtn.addEventListener('click', () => {
-    addMultipleTagsForm.style.display = 'none';
-});
-
-
-const editModal = document.getElementById('edit-tag-modal');
-const editForm = document.getElementById('editTagForm');
-const editTagId = document.getElementById('edit-tag-id');
-const editTagName = document.getElementById('edit-tag-name');
-
-function openEditModal(tagId, tagName) {
-    editTagId.value = tagId;
-    editTagName.value = tagName;
-    editModal.style.display = 'flex';
+    function confirmerSuppression(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+        window.location.href = 'supprimer_utilisateur.php?id=' + id;
+    }
 }
-
-function closeEditModal() {
-    editModal.style.display = 'none';
-}
-
-editForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData();
-    formData.append('id_tag', editTagId.value);
-    formData.append('new_name', editTagName.value);
-
-    fetch('../../actions/update_tag.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            const tagCard = document.querySelector(`[data-tag-id="${editTagId.value}"]`);
-            const tagName = tagCard.querySelector('h3');
-            tagName.textContent = editTagName.value;
-            closeEditModal();
-        } else {
-            alert('Erreur lors de la modification du tag: ' + data.message);
+        const cancelButtonTag = document.querySelector('#cancel-tag');
+        const catFormContainer = document.querySelector('#add-cat-form');
+        const opencatForm = document.querySelector('#open-add-categorie');
+        const catForm = document.querySelector('#addCategorieForm');
+        const TagFormContainer = document.querySelector('#add-tag-form');
+        const openTagForm = document.querySelector('#open-add-tag');
+        const TagForm = document.querySelector('#addTagForm');
+        cancelButtonTag.addEventListener('click', function() {
+            TagFormContainer.style.display = 'none';
+            TagForm.reset();
+            catFormContainer.style.display = 'none';
+            catForm.reset();
+        });
+        openTagForm.addEventListener('click', function() {
+            TagFormContainer.style.display = 'flex';
+        });
+        opencatForm.addEventListener('click', function() {
+            catFormContainer.style.display = 'flex';
+        });
+        const openMultipleTagsBtn = document.querySelector('button.bg-gradient-to-r.from-purple-500');
+        const addMultipleTagsForm = document.getElementById('add-multiple-tags-form');
+        const cancelMultipleTagsBtn = document.getElementById('cancel-multiple-tags');
+        openMultipleTagsBtn.addEventListener('click', () => {
+            addMultipleTagsForm.style.display = 'flex';
+        });
+        cancelMultipleTagsBtn.addEventListener('click', () => {
+            addMultipleTagsForm.style.display = 'none';
+        });
+        const editModal = document.getElementById('edit-tag-modal');
+        const editForm = document.getElementById('editTagForm');
+        const editTagId = document.getElementById('edit-tag-id');
+        const editTagName = document.getElementById('edit-tag-name');
+        
+        function openEditModal(tagId, tagName) {if(editModal){
+            editTagId.value = tagId;
+            editTagName.value = tagName;
+            editModal.style.display = 'flex';
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Une erreur est survenue lors de la modification du tag');
-    });
-});
+        }
+        const editcatModal = document.getElementById('edit-categorie-modal');
+        const editcatForm = document.getElementById('editCategorieForm');
+        const editcatId = document.getElementById('edit-cat-id');
+        const editcatName = document.getElementById('edit-categorie-name');
+
+        function openEditcatModal(tagId, tagName) {
+            editcatId.value = tagId;
+            editcatName.value = tagName;
+            editcatModal.style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            editModal.style.display = 'none';
+        }
+        function closeEditcatModal() {
+            editcatModal.style.display = 'none';
+        }
+
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('id_tag', editTagId.value);
+            formData.append('new_name', editTagName.value);
+
+            fetch('../../actions/update_tag.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const tagCard = document.querySelector(`[data-tag-id="${editTagId.value}"]`);
+                    const tagName = tagCard.querySelector('h3');
+                    tagName.textContent = editTagName.value;
+                    closeEditModal();
+                } else {
+                    alert('Erreur lors de la modification du tag: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Une erreur est survenue lors de la modification du tag');
+            });
+        });
 
 
 
-const cancelButtonCategory = document.querySelector('#cancel-cat');
-const CategoryFormContainer = document.querySelector('#add-cat-form');
-const openCategoryForm = document.querySelector('#open-add-cat');
-const CategoryForm = document.querySelector('#addCategoryForm');
+        // const cancelButtonCategory = document.querySelector('#cancel-cat');
+        // const CategoryFormContainer = document.querySelector('#add-cat-form');
+        // const openCategoryForm = document.querySelector('#open-add-cat');
+        // const CategoryForm = document.querySelector('#addCategoryForm');
 
-cancelButtonCategory.addEventListener('click', function() {
-    CategoryFormContainer.style.display = 'none';
-    CategoryForm.reset();
-});
+        // cancelButtonCategory.addEventListener('click', function() {
+        //     CategoryFormContainer.style.display = 'none';
+        //     CategoryForm.reset();
+        // });
 
-openCategoryForm.addEventListener('click', function() {
-    CategoryFormContainer.style.display = 'flex';
-});
+        // openCategoryForm.addEventListener('click', function() {
+        //     CategoryFormContainer.style.display = 'flex';
+        // });
 </script>
 
-    <script src="C:\laragon\www\Youdemy\assets\js\admin.js"></script>
 </body>
 </html>

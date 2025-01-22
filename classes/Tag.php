@@ -1,14 +1,15 @@
 <?php
-    require_once __DIR__ . 'Database.php';
+    require_once 'Database.php';
     
     class Tag {
         private $id;
         private $nom;
         private $database;
     
-        public function __construct() {
+        public function __construct($nom) {
+            $this->nom = $nom;
             $this->database = Database::getInstance()->getConnection();
-        }
+        }   
     
         // Getters
         public function getId() {
