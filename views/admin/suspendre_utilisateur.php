@@ -17,9 +17,9 @@ if (isset($_GET['id'])) {
     $id = $_GET['id'];
     
     if ($admin->suspendreUtilisateur($id)) {
-        header("Location: utilisateurs.php?message=Utilisateur suspendu avec succès");
+        header("Location: dash_admin.php?message=Utilisateur suspendu avec succès");
     } else {
-        header("Location: utilisateurs.php?error=Échec de la suspension de l'utilisateur");
+        header("Location: dash_admin.php?error=Échec de la suspension de l'utilisateur");
     }
 }
 ?>

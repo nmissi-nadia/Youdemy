@@ -16,9 +16,9 @@ if (isset($_GET['id'])) {
     $id = $_GET['id'];
     
     if ($admin->activerUtilisateur($id)) {
-        header("Location: utilisateurs.php?message=Utilisateur activé avec succès");
+        header("Location: dash_admin.php?message=Utilisateur activé avec succès");
     } else {
-        header("Location: utilisateurs.php?error=Échec de l'activation de l'utilisateur");
+        header("Location: dash_admin.php?error=Échec de l'activation de l'utilisateur");
     }
 }
 ?>

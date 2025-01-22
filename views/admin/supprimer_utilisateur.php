@@ -17,9 +17,9 @@ if (isset($_GET['id'])) {
     $id = $_GET['id'];
     
     if ($admin->supprimerUtilisateur($id)) {
-        header("Location: dashadmin.php?message=Utilisateur supprimé avec succès");
+        header("Location: dash_admin.php?message=Utilisateur supprimé avec succès");
     } else {
-        header("Location: dashadmin.php?error=Échec de la suppression de l'utilisateur");
+        header("Location: dash_admin.php?error=Échec de la suppression de l'utilisateur");
     }
 }
 ?>
