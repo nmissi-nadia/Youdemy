@@ -18,6 +18,31 @@ $nombreEnseignantsEnAttente = $admin->obtenirNombreEnseignantsEnAttente();
 $coursAvecPlusEtudiants = $admin->obtenirCoursAvecPlusEtudiants();
 $top3Enseignants = $admin->obtenirTop3Enseignants();
 $tousLesUtilisateurs = $admin->obtenirTousLesUtilisateurs();
+if($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //ajout
+    if(isset($_POST["add-tag"])) {
+        $tag = new Tag($_POST['nom-tag']);
+        $tag->ajoutTag($tag->getNom());
+    }
+    //ajout multiple de tags 
+    if(isset($_POST["add-multiple-tags"])) {
+        $tags_string = $_POST['tags-list'];
+        $tags_array = explode(',', $tags_string);
+        $tag = new Tag('');
+        foreach($tags_array as $tag_name) {
+            $tag_name = trim($tag_name);
+            if(!empty($tag_name)) {
+                $tag->ajoutTag($tag_name);
+            }
+        }
+    }
+    //delete
+    if(isset($_POST["delete-tag"])) {
+        $tag = new Tag('');
+        $id= $_POST["tag-id"];
+        $tag->supprimeTag($id);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -27,7 +52,7 @@ $tousLesUtilisateurs = $admin->obtenirTousLesUtilisateurs();
     <title>Tableau de bord Administratif</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" href="../../assets/img/yodemyicon.png" type="image/x-icon">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
 <body class="bg-gray-100">
     <div class="flex h-screen">
@@ -36,19 +61,19 @@ $tousLesUtilisateurs = $admin->obtenirTousLesUtilisateurs();
             <div class="p-4">
                 <h2 class="text-2xl font-bold mb-8">Admin Dashboard</h2>
                 <nav class="space-y-2">
-                    <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
+                    <a href="?section=Dashboard" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                         </svg>
                         <span>Dashboard</span>
                     </a>
-                    <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
+                    <a href="?section=enseign" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
                         <span>Enseignants</span>
                     </a>
-                    <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
+                    <a href="?section=cours" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                         </svg>
@@ -57,7 +82,20 @@ $tousLesUtilisateurs = $admin->obtenirTousLesUtilisateurs();
                 </nav>
             </div>
         </div>
+        <?php
+            $section = isset($_GET['section']) ? $_GET['section'] : 'tableau-de-bord';
 
+            switch ($section) {
+                case 'enseign':
+                    include 'valenseignat.php';
+                    break;
+                case 'cours':
+                    include 'cours.php';
+                    break;
+                case 'Dashbord':
+                
+            }
+            ?>
         <!-- Main Content -->
         <div class="flex-1 overflow-auto">
             <div class="p-8">
@@ -117,45 +155,20 @@ $tousLesUtilisateurs = $admin->obtenirTousLesUtilisateurs();
                     </div>
                 </div>
 
-                <!-- Validation des comptes enseignants -->
-                    <div class="bg-white p-4 rounded-lg shadow-md mb-6 justify-center">
-                        <h2 class="text-xl font-bold mb-4">Validation des comptes enseignants</h2>
-                        <table class="min-w-full bg-white">
-                            <thead>
-                                <tr>
-                                    <th class="py-2">Nom</th>
-                                    <th class="py-2">Email</th>
-                                    <th class="py-2">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                              
-                              $enseignantsEnAttente = $admin->obtenirEnseignantsEnAttente();
-                              foreach ($enseignantsEnAttente as $ligne) {
-                                  echo "<tr>";
-                                  echo "<td class='py-2'>{$ligne['nom']}</td>";
-                                  echo "<td class='py-2'>{$ligne['email']}</td>";
-                                  echo "<td class='py-2'><a href='valider_enseignant.php?id={$ligne['iduser']}' class='bg-green-500 text-white px-4 py-2 rounded'>Valider</a></td>";
-                                  echo "</tr>";
-                              }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
+                
                     <!-- Gestion des utilisateurs -->
                     <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Gestion des utilisateurs</h2>
-        <div class="relative">
-            <input type="text" 
-                   placeholder="Rechercher un utilisateur..." 
-                   class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-        </div>
-    </div>
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">Gestion des utilisateurs</h2>
+                            <div class="relative">
+                                <input type="text" 
+                                    placeholder="Rechercher un utilisateur..." 
+                                    class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                        </div>
 
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
@@ -310,6 +323,12 @@ function confirmerSuppression(id) {
                             foreach ($toutesLesCategories as $categorie) {
                                 echo "<tr>";
                                 echo "<td class='py-2'>{$categorie['categorie']}</td>";
+                                echo "<td class='py-2'><form method='POST' action=''>
+                                    <input name='tag-id' type='hidden' value='{$categorie['idcategorie']}'>
+                                    <button name='delete-tag' class='p-2 text-red-500 hover:bg-pink-50 rounded-lg transition duration-200 hover:scale-110' title='Supprimer'>
+                                        <i class='fas fa-trash'></i>
+                                    </button>
+                                </form></td>";
                                 echo "</tr>";
                             }
                             ?>
@@ -335,11 +354,21 @@ function confirmerSuppression(id) {
                                 echo "<tr>";
                                 echo "<td class='py-2'>{$tag['idtag']}</td>";
                                 echo "<td class='py-2'>{$tag['tag']}</td>";
+                                echo "<td class='py-2'><form method='POST' action=''>
+                                    <input name='tag-id' type='hidden' value='{$tag['idtag']}'>
+                                    <button name='delete-tag' class='p-2 text-red-500 hover:bg-pink-50 rounded-lg transition duration-200 hover:scale-110' title='Supprimer'>
+                                        <i class='fas fa-trash'></i>
+                                    </button>
+                                </form></td>";
                                 echo "</tr>";
                             }
                             ?>
                         </tbody>
                     </table>
+                    <section class="flex items-center justify-between gap-5 p-5">
+                        <button id="open-add-tag" type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 ">Ajouter un Tag</button>
+                        <button type="button" class="text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 shadow-lg shadow-purple-500/50 dark:shadow-lg dark:shadow-purple-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Ajouter Multiple Tags</button>
+                    </section>
                 </div>
             </div>
                 
