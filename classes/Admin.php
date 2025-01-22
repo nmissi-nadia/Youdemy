@@ -23,7 +23,7 @@ class Admin extends User {
         $bd = Database::getInstance();
         $pdo = $bd->getConnection();
 
-        $stmt = $pdo->prepare("UPDATE user SET status = 'active' WHERE iduser = ?");
+        $stmt = $pdo->prepare("UPDATE user SET status = 'accepter' WHERE iduser = ?");
         return $stmt->execute([$id]);
     }
 
@@ -31,7 +31,7 @@ class Admin extends User {
         $bd = Database::getInstance();
         $pdo = $bd->getConnection();
 
-        $stmt = $pdo->prepare("UPDATE user SET status = 'suspended' WHERE iduser = ?");
+        $stmt = $pdo->prepare("UPDATE user SET status = '' WHERE iduser = ?");
         return $stmt->execute([$id]);
     }
 

@@ -2,6 +2,7 @@
     session_start();
     require_once '../../classes/Database.php';
     require_once '../../classes/Admin.php';
+    require_once '../../classes/Cours.php';
 
     if (!isset($_SESSION['user_id']) && !isset($_SESSION['role_id']) !== 'admin') {
         header('Location: ../home.php');
@@ -10,6 +11,37 @@
 
     $admin = new Admin($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email'], $_SESSION['user_role'],''
 );
+
+
+
+$coursInstance = new Cours();
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$coursParPage = 6;
+$offset = ($page - 1) * $coursParPage;
+
+// Gestion de la suppression
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'deletecours' && isset($_POST['cours_id'])) {
+    try {
+        $coursInstance->supprimerCours($_POST['cours_id']);
+        $message = "Cours supprimé avec succès.";
+        $messageType = "success";
+    } catch (Exception $e) {
+        $message = "Erreur lors de la suppression : " . $e->getMessage();
+        $messageType = "error";
+    }
+}
+
+try {
+    $tousLesCours = $coursInstance->obtenirTousLesCours();
+    $totalCours = count($tousLesCours);
+    $totalPages = ceil($totalCours / $coursParPage);
+    $coursPagines = array_slice($tousLesCours, $offset, $coursParPage);
+} catch (Exception $e) {
+    $message = $e->getMessage();
+    $messageType = "error";
+}
+
+
 // Récupérer les statistiques
 $nombreTotalEnseignants = $admin->obtenirNombreTotalEnseignants();
 $nombreTotalCours = $admin->obtenirNombreTotalCours();
@@ -61,19 +93,19 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="p-4">
                 <h2 class="text-2xl font-bold mb-8">Admin Dashboard</h2>
                 <nav class="space-y-2">
-                    <a href="?section=Dashboard" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
+                    <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                         </svg>
                         <span>Dashboard</span>
                     </a>
-                    <a href="?section=enseign" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
+                    <a href="valenseignat.php" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
                         <span>Enseignants</span>
                     </a>
-                    <a href="?section=cours" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
+                    <a href="cours.php" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                         </svg>
@@ -82,20 +114,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </nav>
             </div>
         </div>
-        <?php
-            $section = isset($_GET['section']) ? $_GET['section'] : 'tableau-de-bord';
-
-            switch ($section) {
-                case 'enseign':
-                    include 'valenseignat.php';
-                    break;
-                case 'cours':
-                    include 'cours.php';
-                    break;
-                case 'Dashbord':
-                
-            }
-            ?>
+      
+       
         <!-- Main Content -->
         <div class="flex-1 overflow-auto">
             <div class="p-8">
@@ -369,13 +389,196 @@ function confirmerSuppression(id) {
                         <button id="open-add-tag" type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 ">Ajouter un Tag</button>
                         <button type="button" class="text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 shadow-lg shadow-purple-500/50 dark:shadow-lg dark:shadow-purple-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Ajouter Multiple Tags</button>
                     </section>
+                    <!-- Ajout TAG -->
+                <div style="display: none;"  id="add-tag-form" class="z-10 fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center ">
+                    <div class="max-w-md w-full space-y-8 bg-white px-8 py-5 rounded-lg shadow-lg animate__animated animate__fadeIn">
+                        <div>
+                            <h2 class="text-center text-2xl font-extrabold text-gray-900">
+                                Nouveau Tag
+                            </h2>
+                        </div>
+                        <form method="POST" action="" id="addTagForm" class="mt-8 space-y-6">
+                            <div class="rounded-md shadow-sm flex flex-col gap-5">
+                                <div>
+                                    <label for="nom-tag" class="sr-only">Nom</label>
+                                    <input id="nom-tag" name="nom-tag" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm" placeholder="Nom du Tag">
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-10">
+                                <button type="submit" name="add-tag" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium  text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                    Enregister
+                                </button>
+                                <button type="button" name="cancel-tag" id="cancel-tag" class="group relative w-full flex justify-center py-2 px-4 border border-gray-800 text-sm font-medium text-black bg-transparent duration-500 hover:bg-red-700 hover:border-none hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-transparent">
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Ajout multiple TAGS -->
+                <div style="display: none;" id="add-multiple-tags-form" class="z-10 fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center">
+                    <div class="max-w-md w-full space-y-8 bg-white px-8 py-5 rounded-lg shadow-lg animate__animated animate__fadeIn">
+                        <div>
+                            <h2 class="text-center text-2xl font-extrabold text-gray-900">
+                                Ajouter Plusieurs Tags
+                            </h2>
+                            <p class="mt-2 text-center text-sm text-gray-600">
+                                Séparez les tags par des virgules
+                            </p>
+                        </div>
+                        <form method="POST" action="" id="addMultipleTagsForm" class="mt-8 space-y-6">
+                            <div class="rounded-md shadow-sm flex flex-col gap-5">
+                                <div>
+                                    <label for="tags-list" class="sr-only">Tags</label>
+                                    <textarea id="tags-list" name="tags-list" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm" placeholder="tag1, tag2, tag3, ..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-10">
+                                <button type="submit" name="add-multiple-tags" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                    Enregistrer
+                                </button>
+                                <button type="button" id="cancel-multiple-tags" class="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Modif TAG MODAL -->
+                <div style="display: none;" id="edit-tag-modal" class="z-10 fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center">
+                    <div class="max-w-md w-full space-y-8 bg-white px-8 py-5 rounded-lg shadow-lg animate__animated animate__fadeIn">
+                        <div>
+                            <h2 class="text-center text-2xl font-extrabold text-gray-900">
+                                Modifier le Tag
+                            </h2>
+                        </div>
+                        <form id="editTagForm" class="mt-8 space-y-6">
+                            <input type="hidden" id="edit-tag-id">
+                            <div class="rounded-md shadow-sm flex flex-col gap-5">
+                                <div>
+                                    <label for="edit-tag-name" class="sr-only">Nom</label>
+                                    <input id="edit-tag-name" name="edit-tag-name" type="text" required 
+                                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm" 
+                                        placeholder="Nouveau nom du tag">
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-10">
+                                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                    Modifier
+                                </button>
+                                <button type="button" onclick="closeEditModal()" class="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
                 
+<script>
+    let list = document.querySelector('#links');
+const menu = document.querySelector('#burger-menu');
 
-    <script>
-        
-      
-    </script>
+menu.addEventListener('click',function(){
+    list.classList.toggle('left-0');
+    list.classList.toggle('left-[-500px]');
+});
+
+
+
+const cancelButtonTag = document.querySelector('#cancel-tag');
+const TagFormContainer = document.querySelector('#add-tag-form');
+const openTagForm = document.querySelector('#open-add-tag');
+const TagForm = document.querySelector('#addTagForm');
+
+cancelButtonTag.addEventListener('click', function() {
+    TagFormContainer.style.display = 'none';
+    TagForm.reset();
+});
+
+openTagForm.addEventListener('click', function() {
+    TagFormContainer.style.display = 'flex';
+});
+
+
+const openMultipleTagsBtn = document.querySelector('button.bg-gradient-to-r.from-purple-500');
+const addMultipleTagsForm = document.getElementById('add-multiple-tags-form');
+const cancelMultipleTagsBtn = document.getElementById('cancel-multiple-tags');
+
+openMultipleTagsBtn.addEventListener('click', () => {
+    addMultipleTagsForm.style.display = 'flex';
+});
+
+cancelMultipleTagsBtn.addEventListener('click', () => {
+    addMultipleTagsForm.style.display = 'none';
+});
+
+
+const editModal = document.getElementById('edit-tag-modal');
+const editForm = document.getElementById('editTagForm');
+const editTagId = document.getElementById('edit-tag-id');
+const editTagName = document.getElementById('edit-tag-name');
+
+function openEditModal(tagId, tagName) {
+    editTagId.value = tagId;
+    editTagName.value = tagName;
+    editModal.style.display = 'flex';
+}
+
+function closeEditModal() {
+    editModal.style.display = 'none';
+}
+
+editForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    formData.append('id_tag', editTagId.value);
+    formData.append('new_name', editTagName.value);
+
+    fetch('../../actions/update_tag.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const tagCard = document.querySelector(`[data-tag-id="${editTagId.value}"]`);
+            const tagName = tagCard.querySelector('h3');
+            tagName.textContent = editTagName.value;
+            closeEditModal();
+        } else {
+            alert('Erreur lors de la modification du tag: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Une erreur est survenue lors de la modification du tag');
+    });
+});
+
+
+
+const cancelButtonCategory = document.querySelector('#cancel-cat');
+const CategoryFormContainer = document.querySelector('#add-cat-form');
+const openCategoryForm = document.querySelector('#open-add-cat');
+const CategoryForm = document.querySelector('#addCategoryForm');
+
+cancelButtonCategory.addEventListener('click', function() {
+    CategoryFormContainer.style.display = 'none';
+    CategoryForm.reset();
+});
+
+openCategoryForm.addEventListener('click', function() {
+    CategoryFormContainer.style.display = 'flex';
+});
+</script>
+
+    <script src="C:\laragon\www\Youdemy\assets\js\admin.js"></script>
 </body>
 </html>

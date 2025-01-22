@@ -229,6 +229,27 @@ public function ajouterCours(
             throw new Exception("Erreur lors de la récupération des tags du cours : " . $e->getMessage());
         }
     }
-    
+    // recherche par mot clé
+    public function rechercherCours(string $motCle) {
+        try {
+            $requete = "
+                SELECT c.idcours, c.titre, c.description, c.documentation, c.path_vedio AS chemin_video, 
+                       c.dateCreation, cat.categorie AS nom_categorie, 
+                       CONCAT(u.prenom, ' ', u.nom) AS enseignant
+                FROM cours c
+                INNER JOIN categorie cat ON c.idcategorie = cat.idcategorie
+                INNER JOIN user u ON c.idEnseignant = u.iduser
+                WHERE c.titre LIKE :motCle OR c.description LIKE :motCle
+                ORDER BY c.dateCreation DESC
+            ";
+            $stmt = $this->baseDeDonnees->prepare($requete);
+            $motCle = "%" . $motCle . "%";
+            $stmt->bindParam(':motCle', $motCle, PDO::PARAM_STR);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors de la recherche des cours : " . $e->getMessage());
+        }
+    }
  
 }
