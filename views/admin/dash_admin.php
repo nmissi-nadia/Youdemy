@@ -22,7 +22,6 @@ $coursParPage = 6;
 $offset = ($page - 1) * $coursParPage;
 
 
-
 try {
     $tousLesCours = $coursInstance->obtenirTousLesCours();
     $totalCours = count($tousLesCours);
@@ -76,6 +75,42 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cat = new Categorie('');
         $id= $_POST["cat-id"];
         $cat->deleteCategory($id);
+    }
+
+    if (isset($_POST['modiftag'])) {
+        $id = $_POST['edit-tag-id'];
+        $name = $_POST['edit-tag-name'];
+        echo "<script>alert('$id');</script>";
+        $tag = new Tag($name);
+        try {
+                $result = $tag->ModifeTag($id, $name);
+            if ($result) {
+                echo "<script>alert('Modification réussie.');</script>";
+            } else {
+                echo "<script>alert('Erreur lors de la modification.');</script>";
+            }
+            header('Location: ./dash_admin.php');
+            exit;
+        } catch (Exception $e) {
+            echo "<script>alert('Erreur : " . $e->getMessage() . "');</script>";
+        }
+    }
+    if (isset($_POST['edit-categorie-name'])) {
+        $id = $_POST['edit-cat-id'];
+        $name = $_POST['edit-categorie-name'];
+        $categorie = new Categorie($name );
+        try {
+                $result = $categorie->updateCategory($id, $name);
+            if ($result) {
+                echo "<script>alert('Modification réussie.');</script>";
+            } else {
+                echo "<script>alert('Erreur lors de la modification.');</script>";
+            }
+            header('Location: ./dash_admin.php');
+            exit;
+        } catch (Exception $e) {
+            echo "<script>alert('Erreur : " . $e->getMessage() . "');</script>";
+        }
     }
 }
 ?>
@@ -304,7 +339,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </thead>
                         <tbody>
                             <?php
-                            // Fetch all categories
                             $toutesLesCategories = $admin->obtenirToutesLesCategories();
                             foreach ($toutesLesCategories as $categorie) {
                                 echo "<tr>";
@@ -465,8 +499,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 Modifier le Tag
                             </h2>
                         </div>
-                        <form id="editTagForm" class="mt-8 space-y-6">
-                            <input type="hidden" id="edit-tag-id">
+                        <form id="editTagForm" action=" " method="POST" class="mt-8 space-y-6">
+                            <input type="hidden" id="edit-tag-id" name="edit-tag-id">
                             <div class="rounded-md shadow-sm flex flex-col gap-5">
                                 <div>
                                     <label for="edit-tag-name" class="sr-only">Nom</label>
@@ -476,7 +510,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </div>
                             </div>
                             <div class="flex items-center gap-10">
-                                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                <button type="submit" name="modiftag" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                                     Modifier
                                 </button>
                                 <button type="button" onclick="closeEditModal()" class="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
@@ -494,8 +528,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 Modifier le Categorie
                             </h2>
                         </div>
-                        <form id="editCategorieForm" class="mt-8 space-y-6">
-                            <input type="hidden" id="edit-cat-id">
+                        <form id="editCategorieForm" action=" " method="POST" class="mt-8 space-y-6">
+                            <input type="hidden" id="edit-cat-id" name="edit-cat-id">
                             <div class="rounded-md shadow-sm flex flex-col gap-5">
                                 <div>
                                     <label for="edit-categorie-name" class="sr-only">Nom</label>
@@ -505,7 +539,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </div>
                             </div>
                             <div class="flex items-center gap-10">
-                                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                <button type="submit" name="modifcat" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                                     Modifier
                                 </button>
                                 <button type="button" onclick="closeEditcatModal()" class="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
@@ -555,12 +589,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         const editTagId = document.getElementById('edit-tag-id');
         const editTagName = document.getElementById('edit-tag-name');
         
-        function openEditModal(tagId, tagName) {if(editModal){
+        function openEditModal(tagId, tagName) {
             editTagId.value = tagId;
             editTagName.value = tagName;
             editModal.style.display = 'flex';
         }
-        }
+        
         const editcatModal = document.getElementById('edit-categorie-modal');
         const editcatForm = document.getElementById('editCategorieForm');
         const editcatId = document.getElementById('edit-cat-id');
@@ -579,49 +613,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             editcatModal.style.display = 'none';
         }
 
-        editForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData();
-            formData.append('id_tag', editTagId.value);
-            formData.append('new_name', editTagName.value);
-
-            fetch('../../actions/update_tag.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const tagCard = document.querySelector(`[data-tag-id="${editTagId.value}"]`);
-                    const tagName = tagCard.querySelector('h3');
-                    tagName.textContent = editTagName.value;
-                    closeEditModal();
-                } else {
-                    alert('Erreur lors de la modification du tag: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Une erreur est survenue lors de la modification du tag');
-            });
-        });
-
-
-
-        // const cancelButtonCategory = document.querySelector('#cancel-cat');
-        // const CategoryFormContainer = document.querySelector('#add-cat-form');
-        // const openCategoryForm = document.querySelector('#open-add-cat');
-        // const CategoryForm = document.querySelector('#addCategoryForm');
-
-        // cancelButtonCategory.addEventListener('click', function() {
-        //     CategoryFormContainer.style.display = 'none';
-        //     CategoryForm.reset();
-        // });
-
-        // openCategoryForm.addEventListener('click', function() {
-        //     CategoryFormContainer.style.display = 'flex';
-        // });
 </script>
 
 </body>
