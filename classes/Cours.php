@@ -251,5 +251,36 @@ public function ajouterCours(
             throw new Exception("Erreur lors de la recherche des cours : " . $e->getMessage());
         }
     }
+    public function getPaginatedCourses(int $offset, int $limit): array {
+        try {
+            $requete = "SELECT c.idcours, c.titre, c.description, ca.categorie
+                        FROM cours c
+                        JOIN categorie ca ON c.idcategorie = ca.idcategorie
+                        LIMIT :offset, :limit";
+            $stmt = $this->baseDeDonnees->prepare($requete);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+    
+            // Retourner les résultats sous forme de tableau associatif
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors de la récupération des cours paginés : " . $e->getMessage());
+        }
+    }
+    
+    public function countTotalCourses(): int {
+        try {
+            $requete = "SELECT COUNT(*) AS total FROM cours";
+            $stmt = $this->baseDeDonnees->prepare($requete);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+            return $result['total'] ?? 0;
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors du comptage des cours : " . $e->getMessage());
+        }
+    }
+        
  
 }

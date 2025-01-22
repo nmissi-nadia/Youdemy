@@ -177,7 +177,6 @@ class User {
     // Method to login (signin)
     public static function signin($email, $password) {
                 $user = self::findByEmail($email);
-                print_r($user);
                 // Check if user exists and password is correct
                 if (!password_verify($password, $user->passwordHash)) {
                     throw new Exception("Invalid email or password");

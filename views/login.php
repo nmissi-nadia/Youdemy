@@ -27,8 +27,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit;
     } catch (Exception $e) {
+        $error = $e->getMessage();
         echo "<script>alert('Échec de la connexion. Vérifiez vos informations d'identification.')</script>";
     }
+     if (isset($error)): ?>
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white p-4 rounded shadow-md">
+                <p class="text-red-600"><?= htmlspecialchars($error); ?></p>
+                <button onclick="this.parentElement.parentElement.style.display='none';" 
+                        class="mt-2 px-4 py-2 bg-red-600 text-white rounded">Fermer</button>
+            </div>
+        </div>
+        <?php endif;
 }
 ?>
 <!DOCTYPE html>

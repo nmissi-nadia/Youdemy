@@ -1,3 +1,16 @@
+<?php
+require_once '../classes/Cours.php';
+
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1; 
+$parPage = 6; 
+$offset = ($page - 1) * $parPage;
+
+$cours = new Cours();
+$catalogue = $cours->getPaginatedCourses($offset, $parPage);
+$totalCours = $cours->countTotalCourses();
+$totalPages = ceil($totalCours / $parPage); 
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -140,51 +153,46 @@
             </div>
         </div>
     </section>
-    <!-- Bannière de catégories populaires -->
-    <div class="bg-gray-50 py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h3 class="text-2xl font-bold text-center text-gray-800 mb-8">Catégories populaires</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
-                    <div class="text-indigo-600 mb-3 category-icon">
-                        <i class="fas fa-laptop-code text-3xl"></i>
+    <div class="container mx-auto py-8">
+            <h1 class="text-3xl font-bold text-center mb-6">Catalogue des Cours</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <?php foreach ($catalogue as $cours): ?>
+                    <div class="bg-white shadow-md rounded-md p-4">
+                        <h2 class="text-lg font-bold"><?= htmlspecialchars($cours['titre']); ?></h2>
+                        <p class="text-sm text-gray-600"><?= htmlspecialchars($cours['description']); ?></p>
+                        <p class="text-sm font-medium mt-2">
+                            Catégorie : <?= htmlspecialchars($cours['categorie']); ?>
+                        </p>
+                        <button onclick="handleInscriptionPopup()" 
+                                class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                            S'inscrire
+                        </button>
                     </div>
-                    <span class="text-gray-700 text-sm font-medium">Développement</span>
-                </a>
-                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
-                    <div class="text-indigo-600 mb-3 category-icon">
-                        <i class="fas fa-chart-line text-3xl"></i>
-                    </div>
-                    <span class="text-gray-700 text-sm font-medium">Business</span>
-                </a>
-                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
-                    <div class="text-indigo-600 mb-3 category-icon">
-                        <i class="fas fa-palette text-3xl"></i>
-                    </div>
-                    <span class="text-gray-700 text-sm font-medium">Design</span>
-                </a>
-                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
-                    <div class="text-indigo-600 mb-3 category-icon">
-                        <i class="fas fa-language text-3xl"></i>
-                    </div>
-                    <span class="text-gray-700 text-sm font-medium">Langues</span>
-                </a>
-                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
-                    <div class="text-indigo-600 mb-3 category-icon">
-                        <i class="fas fa-camera text-3xl"></i>
-                    </div>
-                    <span class="text-gray-700 text-sm font-medium">Photographie</span>
-                </a>
-                <a href="#" class="category-item flex flex-col items-center p-4 rounded-lg hover:bg-white hover:shadow-lg transition-all">
-                    <div class="text-indigo-600 mb-3 category-icon">
-                        <i class="fas fa-music text-3xl"></i>
-                    </div>
-                    <span class="text-gray-700 text-sm font-medium">Musique</span>
-                </a>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-6 flex justify-center">
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a href="?page=<?= $i; ?>" 
+                    class="px-4 py-2 <?= $i == $page ? 'bg-indigo-600 text-white' : 'bg-gray-300 text-gray-700' ?> rounded mx-1">
+                        <?= $i; ?>
+                    </a>
+                <?php endfor; ?>
+            </div>
+    </div>
+        <!-- Popup d'inscription -->
+        <div id="popupInscription" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white p-6 rounded-md shadow-md w-96">
+                <h2 class="text-lg font-bold mb-4">Connexion ou Inscription requise</h2>
+                <p class="mb-4">Vous devez être connecté pour vous inscrire à ce cours.</p>
+                <div class="flex justify-end space-x-3">
+                    <a href="login.php" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Se connecter</a>
+                    <a href="signup.php" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">S'inscrire</a>
+                </div>
+                <button onclick="closePopup()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">&times;</button>
             </div>
         </div>
-    </div>
-
     <!-- Section Devenir formateur -->
     <div class="bg-indigo-50 py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -220,6 +228,14 @@
     <?php include 'footer.html'; ?>
 
     <script>
+        
+            function handleInscriptionPopup() {
+                document.getElementById('popupInscription').classList.remove('hidden');
+            }
+            function closePopup() {
+                document.getElementById('popupInscription').classList.add('hidden');
+            }
+
         // Animation d'entrée avec GSAP
         window.addEventListener('DOMContentLoaded', () => {
             gsap.to("#mainTitle", {
