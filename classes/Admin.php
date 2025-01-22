@@ -31,7 +31,7 @@ class Admin extends User {
         $bd = Database::getInstance();
         $pdo = $bd->getConnection();
 
-        $stmt = $pdo->prepare("UPDATE user SET status = '' WHERE iduser = ?");
+        $stmt = $pdo->prepare("UPDATE user SET status = 'en attente' WHERE iduser = ?");
         return $stmt->execute([$id]);
     }
 

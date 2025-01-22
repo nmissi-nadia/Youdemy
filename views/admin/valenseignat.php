@@ -11,7 +11,16 @@
 
     $admin = new Admin($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email'], $_SESSION['user_role'],''
 );
-
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['iduser'])) {
+    $idUtilisateur = intval($_POST['iduser']);
+    
+    // Activation de l'utilisateur
+    if ($admin->activerUtilisateur($idUtilisateur)) {
+        echo " <script>alert('Lenseignant a été validé avec succès.');</script>";
+    } else {
+        echo " <script>alert('Une erreur est survenue lors de la validation.');</script>";
+    }
+}
 
 ?>
 <!DOCTYPE html>
@@ -78,7 +87,10 @@
                                   echo "<tr>";
                                   echo "<td class='justify-self-center py-2'>{$ligne['nom']}</td>";
                                   echo "<td class='py-2'>{$ligne['email']}</td>";
-                                  echo "<td class='py-2'><a href='valider_enseignant.php?id={$ligne['iduser']}' class='bg-green-500 text-white px-4 py-2 rounded'>Valider</a></td>";
+                                  echo "<td><form method='POST' style='display:inline;'>
+                                            <input type='hidden' name='iduser' value='{$ligne['iduser']}'>
+                                            <button type='submit' class='text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 shadow-lg shadow-purple-500/50 dark:shadow-lg dark:shadow-purple-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2'>Valider</button>
+                                        </form></td>";
                                   echo "</tr>";
                               }
                                 ?>
