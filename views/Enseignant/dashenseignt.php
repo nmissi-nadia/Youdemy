@@ -266,17 +266,17 @@ switch ($section) {
                 </form>
             </div>
         </div>
-
+ <?php include '../footer.html'; ?>
     <script>
-   function ouvrirModalModifierCours(cours) {
-    document.getElementById('idcours').value = cours.idcours;
-    document.getElementById('titre').value = cours.titre;
-    document.getElementById('description').value = cours.description;
-    document.getElementById('documentation').value = cours.documentation || '';
-    document.getElementById('path_vedio').value = cours.path_vedio || '';
-    document.getElementById('modalModifierCours').classList.remove('hidden');
-}
+        function ouvrirModalModifierCours(cours) {
+            document.getElementById('idcours').value = cours.idcours;
+            document.getElementById('titre').value = cours.titre;
+            document.getElementById('description').value = cours.description;
+            document.getElementById('documentation').value = cours.documentation || '';
+            document.getElementById('path_vedio').value = cours.path_vedio || '';
+            document.getElementById('modalModifierCours').classList.remove('hidden');
+        }
     </script>
-        <?php include '../footer.html'; ?>
+       
 </body>
 </html>

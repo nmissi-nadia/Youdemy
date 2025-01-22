@@ -32,7 +32,7 @@ $tousLesUtilisateurs = $admin->obtenirTousLesUtilisateurs();
 <body class="bg-gray-100">
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-blue-800 text-white flex-shrink-0">
+        <div class="w-64 bg-indigo-600 text-white flex-shrink-0">
             <div class="p-4">
                 <h2 class="text-2xl font-bold mb-8">Admin Dashboard</h2>
                 <nav class="space-y-2">
@@ -118,7 +118,7 @@ $tousLesUtilisateurs = $admin->obtenirTousLesUtilisateurs();
                 </div>
 
                 <!-- Validation des comptes enseignants -->
-                    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                    <div class="bg-white p-4 rounded-lg shadow-md mb-6 justify-center">
                         <h2 class="text-xl font-bold mb-4">Validation des comptes enseignants</h2>
                         <table class="min-w-full bg-white">
                             <thead>
@@ -284,9 +284,9 @@ function confirmerSuppression(id) {
                             $tousLesCours = $admin->obtenirTousLesCours();
                             foreach ($tousLesCours as $cours) {
                                 echo "<tr>";
-                                echo "<td class='py-2'>{$cours['title']}</td>";
-                                echo "<td class='py-2'>{$cours['category']}</td>";
-                                echo "<td class='py-2'>{$cours['tags']}</td>";
+                                echo "<td class='py-2'>{$cours['titre']}</td>";
+                                echo "<td class='py-2'>{$cours['categorie']}</td>";
+                                // echo "<td class='py-2'>{$cours['tags']}</td>";
                                 echo "</tr>";
                             }
                             ?>
@@ -300,6 +300,7 @@ function confirmerSuppression(id) {
                         <thead>
                             <tr>
                                 <th class="py-2">Nom</th>
+                                <th class="py-2">action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -308,7 +309,7 @@ function confirmerSuppression(id) {
                             $toutesLesCategories = $admin->obtenirToutesLesCategories();
                             foreach ($toutesLesCategories as $categorie) {
                                 echo "<tr>";
-                                echo "<td class='py-2'>{$categorie['name']}</td>";
+                                echo "<td class='py-2'>{$categorie['categorie']}</td>";
                                 echo "</tr>";
                             }
                             ?>
@@ -321,7 +322,9 @@ function confirmerSuppression(id) {
                     <table class="min-w-full bg-white">
                         <thead>
                             <tr>
+                                <th class="py-2">id</th>
                                 <th class="py-2">Nom</th>
+                                <th class="py-2">action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -330,7 +333,8 @@ function confirmerSuppression(id) {
                             $tousLesTags = $admin->obtenirTousLesTags();
                             foreach ($tousLesTags as $tag) {
                                 echo "<tr>";
-                                echo "<td class='py-2'>{$tag['name']}</td>";
+                                echo "<td class='py-2'>{$tag['idtag']}</td>";
+                                echo "<td class='py-2'>{$tag['tag']}</td>";
                                 echo "</tr>";
                             }
                             ?>
@@ -338,123 +342,11 @@ function confirmerSuppression(id) {
                     </table>
                 </div>
             </div>
-                <!-- Recent Activity -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4">Activités Récentes</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enseignant</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200" id="activityTable">
-                                <!-- Les données seront insérées ici via JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                
 
     <script>
-        // Initialisation des graphiques
-        document.addEventListener('DOMContentLoaded', function() {
-            // Graphique des cours
-            const coursesCtx = document.getElementById('coursesChart').getContext('2d');
-            new Chart(coursesCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Sciences', 'Mathématiques', 'Langues', 'Histoire', 'Arts'],
-                    datasets: [{
-                        data: [30, 25, 15, 10, 20],
-                        backgroundColor: [
-                            'rgba(54, 162, 235, 0.8)',
-                            'rgba(255, 99, 132, 0.8)',
-                            'rgba(255, 206, 86, 0.8)',
-                            'rgba(75, 192, 192, 0.8)',
-                            'rgba(153, 102, 255, 0.8)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-
-            // Graphique des enseignants
-            const teachersCtx = document.getElementById('teachersChart').getContext('2d');
-            new Chart(teachersCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Prof. Martin', 'Prof. Bernard', 'Prof. Durant'],
-                    datasets: [{
-                        label: 'Nombre d\'étudiants',
-                        data: [120, 85, 75],
-                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            // Ajout des activités récentes
-            const activities = [
-                { teacher: 'Prof. Martin', action: 'Nouveau cours ajouté', date: '2024-01-16', status: 'Validé' },
-                { teacher: 'Prof. Bernard', action: 'Modification du cours', date: '2024-01-15', status: 'En attente' },
-                { teacher: 'Prof. Durant', action: 'Inscription validée', date: '2024-01-14', status: 'Validé' }
-            ];
-
-            const activityTable = document.getElementById('activityTable');
-            activities.forEach(activity => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="text-sm font-medium text-gray-900">${activity.teacher}</div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${activity.action}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-500">${activity.date}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            activity.status === 'Validé' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                        }">
-                            ${activity.status}
-                        </span>
-                    </td>
-                `;
-                activityTable.appendChild(row);
-            });
-        });
+        
+      
     </script>
 </body>
 </html>

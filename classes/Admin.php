@@ -15,7 +15,7 @@ class Admin extends User {
         $bd = Database::getInstance();
         $pdo = $bd->getConnection();
 
-        $stmt = $pdo->query("SELECT * FROM user WHERE role = 'Enseignant' AND status = 'pending'");
+        $stmt = $pdo->query("SELECT * FROM user WHERE role = 'Enseignant' AND status = 'en attente'");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

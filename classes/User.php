@@ -65,8 +65,8 @@ class User {
             $stmt = $pdo->prepare("UPDATE user SET nom = ?, prenom = ?, email = ?, password = ?, role = ?, status = ? WHERE iduser = ?");
             return $stmt->execute([$this->nom, $this->prenom, $this->email, $this->passwordHash, $this->role, $this->status, $this->id]);
         } else {
-            $stmt = $pdo->prepare("INSERT INTO user (nom, prenom, email, password, role) VALUES (?, ?, ?, ?, ?)");
-            $result = $stmt->execute([$this->nom, $this->prenom, $this->email, $this->passwordHash, $this->role]);
+            $stmt = $pdo->prepare("INSERT INTO user (nom, prenom, email, password, role,status) VALUES (?, ?, ?, ?, ?,?)");
+            $result = $stmt->execute([$this->nom, $this->prenom, $this->email, $this->passwordHash, $this->role,$this->status]);
             if ($result) {
                 $this->id = $pdo->lastInsertId();
             }
@@ -169,6 +169,7 @@ class User {
                 // Create a new user object
                 $user = new User( null,$nom, $prenom, $email,$role, $password);
                  $user->setPasswordHash($password); // Hash the password
+                 $user->setStatus($role === 'Enseignant' ? 'en attente' : 'accepter');
                 return $user->save();
     }
 
@@ -180,6 +181,9 @@ class User {
                 // Check if user exists and password is correct
                 if (!password_verify($password, $user->passwordHash)) {
                     throw new Exception("Invalid email or password");
+                }
+                if ($user->status === 'en attente') {
+                    throw new Exception("Votre compte est en attente d'approbation. Veuillez attendre la confirmation.");
                 }
                 $_SESSION['user_id'] = $user->id;
                 $_SESSION['user_role'] = $user->role;
