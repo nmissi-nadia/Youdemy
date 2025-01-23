@@ -2,13 +2,13 @@
 require_once 'Database.php';
 
 class Cours {
-    private int | null $id;
-    private string | null $titre;
-    private string | null $description;
-    private string | null $documentation;
-    private string | null $cheminVideo;
-    private string | null $dateCreation;
-    private $baseDeDonnees;
+    protected int | null $id;
+    protected string | null $titre;
+    protected string | null $description;
+    protected string | null $documentation;
+    protected string | null $cheminVideo;
+    protected string | null $dateCreation;
+    protected $baseDeDonnees;
 
     public function __construct($id,$titre, $description, $documentation, $cheminVideo) {
         $this->id=$id;
@@ -138,7 +138,7 @@ class Cours {
     
 
    // Ajouter un nouveau cours avec des tags
-    public function ajouterCours(array $tags): bool {
+    public function ajouterCours(array $tags,$categorieId,$enseignantId) {
         try {
             $requete = "INSERT INTO cours (titre, description, documentation, path_vedio, idcategorie, idEnseignant) 
                         VALUES (:titre, :description, :documentation, :path_vedio, :idcategorie, :idEnseignant)";
@@ -147,8 +147,8 @@ class Cours {
             $stmt->bindParam(':description', $this->description);
             $stmt->bindParam(':documentation', $this->documentation);
             $stmt->bindParam(':path_vedio', $this->pathVideo);
-            $stmt->bindParam(':idcategorie', $this->categorieId);
-            $stmt->bindParam(':idEnseignant', $this->enseignantId);
+            $stmt->bindParam(':idcategorie', $categorieId);
+            $stmt->bindParam(':idEnseignant', $enseignantId);
             return $stmt->execute();
         } catch (PDOException $e) {
             throw new Exception("Erreur lors de l'ajout du cours : " . $e->getMessage());
@@ -159,14 +159,22 @@ class Cours {
     // Supprimer un cours
     public function supprimerCours(int $id) {
         try {
-            $requete = "DELETE FROM cours WHERE idcours = :id";
-            $stmt = $this->baseDeDonnees->prepare($requete);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            return $stmt->execute();
+            // Commencer une transaction pour garantir l'intégrité des données
+            $requeteTags = "DELETE FROM tag_cours WHERE idcours = :id";
+            $stmtTags = $this->baseDeDonnees->prepare($requeteTags);
+            $stmtTags->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmtTags->execute();
+            $requeteCours = "DELETE FROM cours WHERE idcours = :id";
+            $stmtCours = $this->baseDeDonnees->prepare($requeteCours);
+            $stmtCours->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmtCours->execute();
+            
+            return true; // Si tout s'est bien passé
         } catch (PDOException $e) {
             throw new Exception("Erreur lors de la suppression du cours : " . $e->getMessage());
         }
     }
+    
 
     // Récupérer les cours d'un enseignant
     public function obtenirCoursParEnseignant(int $idEnseignant) {

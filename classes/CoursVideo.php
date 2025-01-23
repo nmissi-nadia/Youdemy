@@ -31,7 +31,7 @@ class CoursVideo extends Cours {
     }
 
     // Surcharge de la méthode ajouterCours pour inclure le lien vidéo
-    public function ajouterCours(array $tags): bool {
+    public function ajouterCours(array $tags,$categorieId, $enseignantId) {
         $db = Database::getInstance()->getConnection();
         $query = "INSERT INTO cours (titre, description, path_vedio, idcategorie, idEnseignant) 
                   VALUES (:titre, :description, :path_vedio, :idcategorie, :idEnseignant)";
@@ -39,8 +39,8 @@ class CoursVideo extends Cours {
         $stmt->bindParam(':titre', $this->titre);
         $stmt->bindParam(':description', $this->description);
         $stmt->bindParam(':path_vedio', $this->pathVideo);
-        $stmt->bindParam(':idcategorie', $this->categorieId);
-        $stmt->bindParam(':idEnseignant', $this->enseignantId);
+        $stmt->bindParam(':idcategorie', $categorieId);
+        $stmt->bindParam(':idEnseignant', $enseignantId);
 
         if ($stmt->execute()) {
             $idCours = $db->lastInsertId();

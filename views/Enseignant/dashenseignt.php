@@ -20,30 +20,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     try {
         $action = $_POST['action'];
         $tags1  = $_POST['tags'];
-        var_dump($tags1);
+        
         switch ($action) {
             case 'ajouter':
                 // Ajouter un nouveau cours
                 $titre = $_POST['titre'];
+               
                 $description = $_POST['description'];
-                $categorieId = intval($_POST['categorie']);
+                $categorieId = $_POST['categorie'];
                 $lienVideo = trim($_POST['lien_video'] ?? ''); // Lien vidéo (optionnel)
                 $documentation = trim($_POST['documentation'] ?? '');
-
                 if (!empty($lienVideo)) {
                     // Créer un cours vidéo
-                    $cours = new CoursVideo(null,$titre, $description, $documentation, $lienVideo);
+                    $cours = new CoursVideo(null,$titre, $description,'', $lienVideo);
+                    print_r($titre);
                 } else {
                     // Créer un cours texte
                     $cours = new CoursTexte(null,$titre, $description, $documentation, '');
                 }
-                $cours->ajouterCours($tags1);
+                $cours->ajouterCours($tags1, $categorieId, $_SESSION['user_id']);
                 header('Location: dashenseignt.php?success=cours_ajoute');
                 exit();
 
             case 'modifier':
                 // Modifier un cours existant
-                 $idCours = intval($_POST['cours_id']);
+                 $idCours = $_POST['cours_id'];
                  $titre = trim($_POST['titre']);
                  $description = trim($_POST['description']);
                  $categorieId = intval($_POST['categorie']);
@@ -142,23 +143,27 @@ switch ($section) {
     </div>
 
     <!-- Modal Ajout Cours -->
-        <div id="modalAjoutCours" class="hidden fixed inset-0 z-50 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <!-- Modal Ajout Cours -->
+    <div id="modalAjoutCours" class="hidden fixed inset-0 z-50 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
             <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                 <form method="POST" action="" class="space-y-4">
                     <input type="hidden" name="action" value="ajouter">
 
+                    <!-- Titre -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Titre</label>
                         <input type="text" name="titre" required 
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                     </div>
 
+                    <!-- Description -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Description</label>
                         <textarea name="description" required 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
                     </div>
 
+                    <!-- Catégorie -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Catégorie</label>
                         <select name="categorie" required 
@@ -171,6 +176,7 @@ switch ($section) {
                         </select>
                     </div>
 
+                    <!-- Tags -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Tags</label>
                         <div class="mt-1">
@@ -189,19 +195,38 @@ switch ($section) {
                         </div>
                     </div>
 
+                    <!-- Type de Cours -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Lien Vidéo (Optionnel)</label>
-                        <input type="text" name="lien_video"
+                        <label class="block text-sm font-medium text-gray-700">Type de Cours</label>
+                        <select name="type_cours" id="type_cours" onchange="toggleFields()" required 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <option value="texte">Texte</option>
+                            <option value="video">Vidéo</option>
+                        </select>
+                    </div>
+
+                    <!-- Documentation -->
+                    <div id="documentation_field" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700">Documentation</label>
+                        <textarea name="documentation" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                    </div>
+
+                    <!-- Lien Vidéo -->
+                    <div id="video_field" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700">Lien Vidéo</label>
+                        <input type="text" name="lien_video" 
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                     </div>
 
+                    <!-- Boutons -->
                     <div class="flex justify-end space-x-3">
                         <button type="button" 
                                 onclick="document.getElementById('modalAjoutCours').classList.add('hidden')"
                                 class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
                             Annuler
                         </button>
-                        <button type="submit"
+                        <button type="submit" 
                                 class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
                             Enregistrer
                         </button>
@@ -209,27 +234,29 @@ switch ($section) {
                 </form>
             </div>
         </div>
-
         <!-- Modal Modifier Cours -->
     <!-- Modal Modifier Cours -->
-        <div id="modalModifCours" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <div id="modalModifCours" class="hidden fixed inset-0 z-50 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
             <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                 <form method="POST" action="" class="space-y-4">
                     <input type="hidden" name="action" value="modifier">
                     <input type="hidden" name="cours_id" id="modif_cours_id">
 
+                    <!-- Titre -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Titre</label>
                         <input type="text" name="titre" id="modif_titre" required 
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                     </div>
 
+                    <!-- Description -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Description</label>
                         <textarea name="description" id="modif_description" required 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
                     </div>
 
+                    <!-- Catégorie -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Catégorie</label>
                         <select name="categorie" id="modif_categorie" required 
@@ -242,25 +269,45 @@ switch ($section) {
                         </select>
                     </div>
 
+                    <!-- Tags -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Tags (séparés par des virgules)</label>
+                        <label class="block text-sm font-medium text-gray-700">Tags</label>
                         <input type="text" name="tags" id="modif_tags"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                     </div>
 
+                    <!-- Type de Cours -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Lien Vidéo (Optionnel)</label>
+                        <label class="block text-sm font-medium text-gray-700">Type de Cours</label>
+                        <select name="type_cours" id="modif_type_cours" onchange="toggleFieldsModif()" required 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <option value="texte">Texte</option>
+                            <option value="video">Vidéo</option>
+                        </select>
+                    </div>
+
+                    <!-- Documentation -->
+                    <div id="modif_documentation_field" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700">Documentation</label>
+                        <textarea name="documentation" id="modif_documentation"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                    </div>
+
+                    <!-- Lien Vidéo -->
+                    <div id="modif_video_field" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700">Lien Vidéo</label>
                         <input type="text" name="lien_video" id="modif_lien_video"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                     </div>
 
+                    <!-- Boutons -->
                     <div class="flex justify-end space-x-3">
                         <button type="button" 
-                                onclick="document.getElementById('modalModifierCours').classList.add('hidden')"
+                                onclick="document.getElementById('modalModifCours').classList.add('hidden')"
                                 class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
                             Annuler
                         </button>
-                        <button type="submit" name="action" value="modifierCours"
+                        <button type="submit" 
                                 class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
                             Enregistrer
                         </button>
@@ -278,6 +325,29 @@ switch ($section) {
             document.getElementById('path_vedio').value = cours.path_vedio || '';
             document.getElementById('modalModifierCours').classList.remove('hidden');
         }
+        function toggleFields() {
+                const type = document.getElementById('type_cours').value;
+                document.getElementById('documentation_field').classList.add('hidden');
+                document.getElementById('video_field').classList.add('hidden');
+
+                if (type === 'texte') {
+                    document.getElementById('documentation_field').classList.remove('hidden');
+                } else if (type === 'video') {
+                    document.getElementById('video_field').classList.remove('hidden');
+                }
+            }
+
+            function toggleFieldsModif() {
+                const type = document.getElementById('modif_type_cours').value;
+                document.getElementById('modif_documentation_field').classList.add('hidden');
+                document.getElementById('modif_video_field').classList.add('hidden');
+
+                if (type === 'texte') {
+                    document.getElementById('modif_documentation_field').classList.remove('hidden');
+                } else if (type === 'video') {
+                    document.getElementById('modif_video_field').classList.remove('hidden');
+                }
+            }
     </script>
        
 </body>

@@ -5,15 +5,17 @@ class CoursTexte extends Cours {
     private string $contenuTexte;
 
     public function __construct(
+        $id,
         string $titre, 
         string $description, 
         string $documentation, 
         string $contenuTexte
     ) {
-        parent::__construct(); // Appel du constructeur parent
-        $this->setTitre($titre);
-        $this->setDescription($description);
-        $this->setDocumentation($documentation);
+        parent::__construct($id,$titre,$description,$documentation,$lienVideo); // Appel du constructeur parent
+        $this->id=$id;
+        $this->titre=$titre;
+        $this->description=$description;
+        $this->documentation=$documentation;
         $this->contenuTexte = $contenuTexte;
     }
 
@@ -28,7 +30,7 @@ class CoursTexte extends Cours {
     }
 
     // Surcharge de la méthode ajouterCours pour inclure le contenu texte
-    public function ajouterCours(array $tags): bool {
+    public function ajouterCours(array $tags,$categorieId, $enseignantId) {
         $db = Database::getInstance()->getConnection();
         $query = "INSERT INTO cours (titre, description, documentation, idcategorie, idEnseignant) 
                   VALUES (:titre, :description, :documentation, :idcategorie, :idEnseignant)";
@@ -36,8 +38,8 @@ class CoursTexte extends Cours {
         $stmt->bindParam(':titre', $this->titre);
         $stmt->bindParam(':description', $this->description);
         $stmt->bindParam(':documentation', $this->documentation);
-        $stmt->bindParam(':idcategorie', $this->categorieId);
-        $stmt->bindParam(':idEnseignant', $this->enseignantId);
+        $stmt->bindParam(':idcategorie', $categorieId);
+        $stmt->bindParam(':idEnseignant', $enseignantId);
 
         if ($stmt->execute()) {
             $idCours = $db->lastInsertId();

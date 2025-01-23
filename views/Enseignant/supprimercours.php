@@ -8,7 +8,7 @@ if (!$courseId) {
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['supprcours'])) {
     if (!empty($courseId)) {
-        $coursInstance = new Cours();
+        $coursInstance = new Cours(null,null,null,null,null);
         try {
             $resultat = $coursInstance->supprimerCours($courseId);
             if ($resultat) {
