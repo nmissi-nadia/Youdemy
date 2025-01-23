@@ -5,8 +5,8 @@
     class Enseignant extends User {
 
         // methode pour inscription 
-        public function __construct($id, $nom, $prenom, $email,$role ,$passwordHash) {
-            parent::__construct($id, $nom, $prenom, $email,'Enseignant',$passwordHash );
+        public function __construct($id, $nom, $prenom, $email,$role ,$passwordHash, $status) {
+            parent::__construct($id, $nom, $prenom, $email,'Enseignant',$passwordHash ,$status);
         }
     
         /**

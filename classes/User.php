@@ -8,16 +8,16 @@ class User {
     protected ?string $email = null;
     protected ?string $passwordHash = null; // Utilisé pour stocker le hash du mot de passe
     protected ?string $role = null;
-    protected ?string $status = 'en attente'; // Valeur par défaut
+    protected ?string $status =null; // Valeur par défaut
 
-    public function __construct(?int $id, string $nom, string $prenom, string $email, string $role, ?string $password, ?string $status = 'en attente') {
+    public function __construct(?int $id, string $nom, string $prenom, string $email, string $role, ?string $password, ?string $status ) {
         $this->id = $id;
         $this->nom = $nom;
         $this->prenom = $prenom;
         $this->email = $email;
         $this->role = $role;
         $this->passwordHash = $password;
-        $this->status = $status; // Initialiser avec une valeur par défaut ou la valeur fournie
+        $this->status = $status; 
     }
 
     public function __toString() {
@@ -109,7 +109,7 @@ class User {
             );
         }
 
-        return null; // User not found
+        return null; 
     }
 
     // Static method to search user by email
@@ -163,12 +163,12 @@ class User {
     public static function signin($email, $password) {
         $user = self::findByEmail($email);
 
-        // Vérifier si l'utilisateur existe
         if (!$user) {
             throw new Exception("Utilisateur introuvable.");
+        }else{
+            echo $user->getStatus().'<br>';
         }
 
-        // Vérifier le mot de passe
         if (!password_verify($password, $user->passwordHash)) {
             throw new Exception("Email ou mot de passe invalide.");
         }
@@ -178,12 +178,12 @@ class User {
             throw new Exception("Votre compte est en attente d'approbation. Veuillez attendre la confirmation.");
         }
 
-        // Démarrer la session pour l'utilisateur
         $_SESSION['user_id'] = $user->id;
         $_SESSION['user_role'] = $user->role;
         $_SESSION['user_email'] = $user->email;
         $_SESSION['user_prenom'] = $user->prenom;
         $_SESSION['user_nom'] = $user->nom;
+        $_SESSION['user_status'] = $user->status;
 
         return $user; // Connexion réussie
     }

@@ -8,17 +8,13 @@ class CoursTexte extends Cours {
         string $titre, 
         string $description, 
         string $documentation, 
-        string $contenuTexte, 
-        int $categorieId, 
-        int $enseignantId
+        string $contenuTexte
     ) {
         parent::__construct(); // Appel du constructeur parent
         $this->setTitre($titre);
         $this->setDescription($description);
         $this->setDocumentation($documentation);
         $this->contenuTexte = $contenuTexte;
-        $this->setCategorieId($categorieId);
-        $this->setEnseignantId($enseignantId);
     }
 
     // Getter pour le contenu texte

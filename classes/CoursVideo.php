@@ -6,21 +6,18 @@ class CoursVideo extends Cours {
     private string $lienVideo;
 
     public function __construct(
+        $id,
         string $titre, 
         string $description, 
         string $documentation, 
-        string $lienVideo, 
-        int $categorieId, 
-        int $enseignantId
+        string $lienVideo
     ) {
-        parent::__construct(); // Appel du constructeur parent
+        parent::__construct($id,$titre,$description,$documentation,$lienVideo); // Appel du constructeur parent
         $this->baseDeDonnees = Database::getInstance()->getConnection(); // Initialisation
         $this->setTitre($titre);
         $this->setDescription($description);
         $this->setDocumentation($documentation);
         $this->lienVideo = $lienVideo;
-        $this->setCategorieId($categorieId);
-        $this->setEnseignantId($enseignantId);
     }
 
     // Getter pour le lien vidéo

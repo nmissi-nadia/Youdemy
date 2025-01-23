@@ -13,7 +13,7 @@ if (!isset($_SESSION['user_id']) && !isset($_SESSION['role']) !== 'Enseignant') 
 }
 
 // Récupérer l'instance de l'enseignant
-$enseignant = new Enseignant($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email'], $_SESSION['user_role'],'');
+$enseignant = new Enseignant($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email'], $_SESSION['user_role'],'',$_SESSION['user_status']);
 
 // Gestion des actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -27,39 +27,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $titre = $_POST['titre'];
                 $description = $_POST['description'];
                 $categorieId = intval($_POST['categorie']);
-                $lienVideo = $_POST['lien_video'] ?? null;
+                $lienVideo = trim($_POST['lien_video'] ?? ''); // Lien vidéo (optionnel)
+                $documentation = trim($_POST['documentation'] ?? '');
 
-                if ($lienVideo) {
-                    $cours = new CoursVideo($titre, $description,'', $lienVideo, $categorieId, $_SESSION['user_id']);
-                    $cours->ajouterCours($titre, $description,'', $lienVideo, $categorieId, $_SESSION['user_id'],$tags1);
-
+                if (!empty($lienVideo)) {
+                    // Créer un cours vidéo
+                    $cours = new CoursVideo(null,$titre, $description, $documentation, $lienVideo);
                 } else {
-                    // Ajouter un cours texte
-                    $cours = new CoursTexte($titre, $description, '','', $categorieId, $_SESSION['user_id']);
-                    $cours->ajouterCours($titre, $description, '','', $categorieId, $_SESSION['user_id'],$tags1);
+                    // Créer un cours texte
+                    $cours = new CoursTexte(null,$titre, $description, $documentation, '');
                 }
-                
-                break;
+                $cours->ajouterCours($tags1);
+                header('Location: dashenseignt.php?success=cours_ajoute');
+                exit();
 
             case 'modifier':
                 // Modifier un cours existant
-                $id = intval($_POST['idcours']);
-                $titre = trim($_POST['titre']);
-                $description = trim($_POST['description']);
-                $documentation = trim($_POST['documentation']);
-                $pathVedio = trim($_POST['path_vedio']);
-
-                try {
-                    $coursInstance = new Cours(); // Assurez-vous que l'objet est correctement initialisé
-                    if ($coursInstance->modifierCours($id, $titre, $description, $documentation, $pathVedio)) {
-                        echo "<p class='text-green-500'>Cours mis à jour avec succès.</p>";
-                    } else {
-                        echo "<p class='text-red-500'>Erreur lors de la mise à jour du cours.</p>";
-                    }
-                } catch (Exception $e) {
-                    echo "<p class='text-red-500'>Une erreur s'est produite : " . htmlspecialchars($e->getMessage()) . "</p>";
-                }
-                break;
+                 $idCours = intval($_POST['cours_id']);
+                 $titre = trim($_POST['titre']);
+                 $description = trim($_POST['description']);
+                 $categorieId = intval($_POST['categorie']);
+                 $lienVideo = trim($_POST['lien_video'] ?? '');
+                 $documentation = trim($_POST['documentation'] ?? '');
+ 
+                 if (!empty($lienVideo)) {
+                     // Créer un cours vidéo
+                     $cours = new CoursVideo(NULL,$titre, $description, $documentation, $lienVideo);
+                 } else {
+                     // Créer un cours texte
+                     $cours = new CoursTexte(nULL,$titre, $description, $documentation, '');
+                 }
+ 
+                 // Modifier le cours existant
+                 $cours->modifierCours($idCours, $tags);
+                 header('Location: dashenseignt.php?success=cours_modifie');
+                 exit();
 
             default:
                 throw new Exception("Action non valide !");
