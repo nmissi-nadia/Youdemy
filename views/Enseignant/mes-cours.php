@@ -33,13 +33,14 @@
                                 <div class="text-sm"><?php echo $cours['nbre_inscriptions']; ?> étudiants</div>
                             </td>
                             <td class="px-6 py-4">
-                                <form method="POST" action="supprimercours.php?id=<?php echo $cours['idcours']; ?>" class="inline">
-                                    <input type="hidden" name="cours_id" value="<?php echo $cours['idcours']; ?>">
-                                    <button type="button" 
+                                <button type="button" 
                                             onclick="ouvrirModalModifierCours(<?php echo htmlspecialchars(json_encode($cours)); ?>)" 
                                             class="text-indigo-600 hover:text-indigo-900 mr-3">
                                         <i class="fas fa-edit"></i>
                                     </button>
+                                <form method="POST" action="supprimercours.php?id=<?php echo $cours['idcours']; ?>" class="inline">
+                                    <input type="hidden" name="cours_id" value="<?php echo $cours['idcours']; ?>">
+                                    
                                     <button type="submit" name="supprcours"
                                             value="supprimerCours" 
                                             onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')"

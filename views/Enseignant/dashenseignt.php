@@ -240,26 +240,26 @@ switch ($section) {
             <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                 <form method="POST" action="" class="space-y-4">
                     <input type="hidden" name="action" value="modifier">
-                    <input type="hidden" name="cours_id" id="modif_cours_id">
+                    <input type="hidden" name="cours_id" id="idcours">
 
                     <!-- Titre -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Titre</label>
-                        <input type="text" name="titre" id="modif_titre" required 
+                        <input type="text" name="titre" id="titre" required 
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                     </div>
 
                     <!-- Description -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea name="description" id="modif_description" required 
+                        <textarea name="description" id="description" required 
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
                     </div>
 
                     <!-- Catégorie -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Catégorie</label>
-                        <select name="categorie" id="modif_categorie" required 
+                        <select name="categorie" id="categorie" required 
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                             <?php foreach ($categorie as $cat) : ?>
                                 <option value="<?= htmlspecialchars($cat['idcategorie']) ?>">
@@ -272,31 +272,22 @@ switch ($section) {
                     <!-- Tags -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Tags</label>
-                        <input type="text" name="tags" id="modif_tags"
+                        <input type="text" name="tags" id="tags"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                     </div>
 
-                    <!-- Type de Cours -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Type de Cours</label>
-                        <select name="type_cours" id="modif_type_cours" onchange="toggleFieldsModif()" required 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                            <option value="texte">Texte</option>
-                            <option value="video">Vidéo</option>
-                        </select>
-                    </div>
 
                     <!-- Documentation -->
                     <div id="modif_documentation_field" class="hidden">
                         <label class="block text-sm font-medium text-gray-700">Documentation</label>
-                        <textarea name="documentation" id="modif_documentation"
+                        <textarea name="documentation" id="documentation"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
                     </div>
 
                     <!-- Lien Vidéo -->
                     <div id="modif_video_field" class="hidden">
                         <label class="block text-sm font-medium text-gray-700">Lien Vidéo</label>
-                        <input type="text" name="lien_video" id="modif_lien_video"
+                        <input type="text" name="lien_video" id="lien_video"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                     </div>
 
@@ -318,12 +309,13 @@ switch ($section) {
  <?php include '../footer.html'; ?>
     <script>
         function ouvrirModalModifierCours(cours) {
+            document.getElementById('modalModifCours').classList.remove('hidden');
             document.getElementById('idcours').value = cours.idcours;
             document.getElementById('titre').value = cours.titre;
             document.getElementById('description').value = cours.description;
             document.getElementById('documentation').value = cours.documentation || '';
-            document.getElementById('path_vedio').value = cours.path_vedio || '';
-            document.getElementById('modalModifierCours').classList.remove('hidden');
+            document.getElementById('lien_video').value = cours.path_vedio || '';
+            
         }
         function toggleFields() {
                 const type = document.getElementById('type_cours').value;
