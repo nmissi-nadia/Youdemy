@@ -5,7 +5,7 @@ $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $parPage = 6; 
 $offset = ($page - 1) * $parPage;
 
-$cours = new Cours();
+$cours = new Cours('', '', '', '', 0, 0);
 $catalogue = $cours->getPaginatedCourses($offset, $parPage);
 $totalCours = $cours->countTotalCourses();
 $totalPages = ceil($totalCours / $parPage); 
@@ -155,7 +155,7 @@ $totalPages = ceil($totalCours / $parPage);
     </section>
     <section class="bg-white py-8">
         <div class="container mx-auto">
-            <form action="search.php" method="GET" class="flex items-center">
+            <form action="" method="GET" class="flex items-center">
                 <input type="text" name="search" placeholder="Rechercher un cours" class="rounded-lg border-2 border-gray-300 w-full px-4 py-2">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Rechercher</button>
             </form>

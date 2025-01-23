@@ -2,17 +2,20 @@
 require_once 'Database.php';
 
 class Cours {
-    private int $id;
-    private string $titre;
-    private string $description;
-    private string $documentation;
-    private string $cheminVideo;
-    private int $categorieId;
-    private int $enseignantId;
-    private string $dateCreation;
+    private int | null $id;
+    private string | null $titre;
+    private string | null $description;
+    private string | null $documentation;
+    private string | null $cheminVideo;
+    private string | null $dateCreation;
     private $baseDeDonnees;
 
-    public function __construct() {
+    public function __construct($id,$titre, $description, $documentation, $cheminVideo) {
+        $this->id=$id;
+        $this->titre = $titre;
+        $this->description = $description;
+        $this->documentation = $documentation;
+        $this->cheminVideo = $cheminVideo;
         $this->baseDeDonnees = Database::getInstance()->getConnection();
     }
 
@@ -135,50 +138,22 @@ class Cours {
     
 
    // Ajouter un nouveau cours avec des tags
-public function ajouterCours(
-    string $titre,
-    string $description,
-    string $documentation,
-    string $cheminVideo,
-    int $categorieId,
-    int $enseignantId,
-    array $tags
-) {
-    try {
-        // Début de la transaction
-        $this->baseDeDonnees->beginTransaction();
-
-        // Insertion du cours
-        $requeteCours = "INSERT INTO cours (titre, description, documentation, path_vedio, idcategorie, idEnseignant) 
-                         VALUES (:titre, :description, :documentation, :cheminVideo, :categorieId, :enseignantId)";
-        $stmtCours = $this->baseDeDonnees->prepare($requeteCours);
-        $stmtCours->bindParam(':titre', $titre);
-        $stmtCours->bindParam(':description', $description);
-        $stmtCours->bindParam(':categorieId', $categorieId, PDO::PARAM_INT);
-        $stmtCours->bindParam(':enseignantId', $enseignantId, PDO::PARAM_INT);
-        $stmtCours->execute();
-
-        // Récupération de l'ID du cours nouvellement inséré
-        $idCours = $this->baseDeDonnees->lastInsertId();
-
-        // Insertion des tags associés au cours
-        $requeteTag = "INSERT INTO tag_cours (idcours, idtag) VALUES (:idCours, :idTag)";
-        $stmtTag = $this->baseDeDonnees->prepare($requeteTag);
-        foreach ($tags as $idTag) {
-            $stmtTag->bindParam(':idCours', $idCours, PDO::PARAM_INT);
-            $stmtTag->bindParam(':idTag', $idTag, PDO::PARAM_INT);
-            $stmtTag->execute();
+    public function ajouterCours(array $tags): bool {
+        try {
+            $requete = "INSERT INTO cours (titre, description, documentation, path_vedio, idcategorie, idEnseignant) 
+                        VALUES (:titre, :description, :documentation, :path_vedio, :idcategorie, :idEnseignant)";
+            $stmt = $this->baseDeDonnees->prepare($requete);
+            $stmt->bindParam(':titre', $this->titre);
+            $stmt->bindParam(':description', $this->description);
+            $stmt->bindParam(':documentation', $this->documentation);
+            $stmt->bindParam(':path_vedio', $this->pathVideo);
+            $stmt->bindParam(':idcategorie', $this->categorieId);
+            $stmt->bindParam(':idEnseignant', $this->enseignantId);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors de l'ajout du cours : " . $e->getMessage());
         }
-
-        // Validation de la transaction
-        $this->baseDeDonnees->commit();
-        return true;
-    } catch (PDOException $e) {
-        // Annulation de la transaction en cas d'erreur
-        $this->baseDeDonnees->rollBack();
-        throw new Exception("Erreur lors de l'ajout du cours et des tags : " . $e->getMessage());
     }
-}
 
 
     // Supprimer un cours
@@ -281,6 +256,15 @@ public function ajouterCours(
             throw new Exception("Erreur lors du comptage des cours : " . $e->getMessage());
         }
     }
-        
- 
+    protected function associerTags(int $idCours, array $tags) {
+        $db = Database::getInstance()->getConnection();
+        $query = "INSERT INTO tag_cours (idcours, idtag) VALUES (:idcours, :idtag)";
+        foreach ($tags as $tag) {
+            $stmt = $db->prepare($query);
+            $stmt->bindParam(':idcours', $idCours);
+            $stmt->bindParam(':idtag', $tag);
+            $stmt->execute();
+        }
+    }  
+
 }

@@ -2,23 +2,24 @@
 
 
 class User {
-    protected int | null $id;
-    protected string | null $nom;
-    protected string | null $prenom;
-    protected string | null $email;
-    protected string | null $passwordHash; // Utilisé pour stocker le hash du mot de passe
-    protected string | null $role;
-    protected string | null $status;
-   
+    protected ?int $id = null;
+    protected ?string $nom = null;
+    protected ?string $prenom = null;
+    protected ?string $email = null;
+    protected ?string $passwordHash = null; // Utilisé pour stocker le hash du mot de passe
+    protected ?string $role = null;
+    protected ?string $status = 'en attente'; // Valeur par défaut
 
-    public function __construct($id, $nom, $prenom, $email, $role, $password) {
+    public function __construct(?int $id, string $nom, string $prenom, string $email, string $role, ?string $password, ?string $status = 'en attente') {
         $this->id = $id;
         $this->nom = $nom;
         $this->prenom = $prenom;
         $this->email = $email;
         $this->role = $role;
-        $this->passwordHash=$password;
+        $this->passwordHash = $password;
+        $this->status = $status; // Initialiser avec une valeur par défaut ou la valeur fournie
     }
+
     public function __toString() {
         return $this->nom . " " . $this->prenom;
     }
@@ -27,36 +28,24 @@ class User {
     public function getNom() { return $this->nom; }
     public function getPrenom() { return $this->prenom; }
     public function getEmail() { return $this->email; }
+    public function getStatus(): ?string { return $this->status; } // Ajout d'un getter pour status
+
 
     // Password hashing method
     public function setPasswordHash($password) {
         $this->passwordHash = password_hash($password, PASSWORD_DEFAULT);
     }
 
-    public function setNom(string $nom): void {
-        $this->nom = $nom;
-    }
+    // Setters
+    public function setNom(string $nom): void { $this->nom = $nom; }
+    public function setPrenom(string $prenom): void { $this->prenom = $prenom; }
+    public function setEmail(string $email): void { $this->email = $email; }
+    public function setRole(string $role): void { $this->role = $role; }
+    public function setStatus(string $status): void { $this->status = $status; }
 
-    public function setPrenom(string $prenom): void {
-        $this->prenom = $prenom;
-    }
-
-    public function setEmail(string $email): void {
-        $this->email = $email;
-    }
+    public function getPasswordHash(): ?string { return $this->passwordHash; }
 
 
-    public function setRole(string $role): void {
-        $this->role = $role;
-    }
-
-    public function setStatus(string $status): void {
-        $this->status = $status;
-    }
-
-    public function getPasswordHash(): ?string {
-        return $this->passwordHash;
-    }
     // Save user to the database
     public function save() {
         $bd = Database::getInstance();
@@ -132,12 +121,12 @@ class User {
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($result) {
             if ($result['role'] == 'Enseignant') {
-                $user = new Enseignant($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']);
+                $user = new Enseignant($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password'],$result['status']);
             } elseif ($result['role'] == 'etudiant') {
-                $user = new Etudiant($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']);
+                $user = new Etudiant($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password'],$result['status']);
                 
             }elseif ($result['role'] == 'admin') {
-                $user = new Admin($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password']); 
+                $user = new Admin($result['iduser'], $result['nom'], $result['prenom'], $result['email'],$result['role'], $result['password'],$result['status']); 
             }
             
             
@@ -146,50 +135,57 @@ class User {
         }
     }
     // Method to register a new user (signup)
-    public static function signup($nom, $prenom, $email,$role, $password) {
-   
-                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    throw new Exception("Invalid email format");
-                }
+    public static function signup($nom, $prenom, $email, $role, $password) {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("Format d'email invalide.");
+        }
 
-                // Validate password length
-                if (strlen($password) < 6) {
-                    throw new Exception("Password must be at least 6 characters long");
-                }
+        if (strlen($password) < 6) {
+            throw new Exception("Le mot de passe doit contenir au moins 6 caractères.");
+        }
 
-                // Sanitize name fields
-                $nom = htmlspecialchars($nom);
-                $prenom = htmlspecialchars($prenom);
+        $nom = htmlspecialchars($nom);
+        $prenom = htmlspecialchars($prenom);
 
-                // Check if email already exists
-                if (self::findByEmail($email)) {
-                    throw new Exception("Email deja existe");
-                }
+        if (self::findByEmail($email)) {
+            throw new Exception("L'email existe déjà.");
+        }
 
-                // Create a new user object
-                $user = new User( null,$nom, $prenom, $email,$role, $password);
-                 $user->setPasswordHash($password); // Hash the password
-                 $user->setStatus($role === 'Enseignant' ? 'en attente' : 'accepter');
-                return $user->save();
+        $status = $role === 'Enseignant' ? 'en attente' : 'accepter';
+        $user = new User(null, $nom, $prenom, $email, $role, null, $status);
+        $user->setPasswordHash($password);
+
+        return $user->save();
     }
 
 
     // Method to login (signin)
     public static function signin($email, $password) {
-                $user = self::findByEmail($email);
-                // Check if user exists and password is correct
-                if (!password_verify($password, $user->passwordHash)) {
-                    throw new Exception("Invalid email or password");
-                }
-                if ($user->status === 'en attente') {
-                    throw new Exception("Votre compte est en attente d'approbation. Veuillez attendre la confirmation.");
-                }
-                $_SESSION['user_id'] = $user->id;
-                $_SESSION['user_role'] = $user->role;
-                $_SESSION['user_email'] = $user->email;
-                $_SESSION['user_prenom'] = $user->prenom;
-                $_SESSION['user_nom'] = $user->nom;
-                return $user; // Successful login
+        $user = self::findByEmail($email);
+
+        // Vérifier si l'utilisateur existe
+        if (!$user) {
+            throw new Exception("Utilisateur introuvable.");
+        }
+
+        // Vérifier le mot de passe
+        if (!password_verify($password, $user->passwordHash)) {
+            throw new Exception("Email ou mot de passe invalide.");
+        }
+
+        // Vérifier le statut de l'utilisateur
+        if ($user->getStatus() === 'en attente') {
+            throw new Exception("Votre compte est en attente d'approbation. Veuillez attendre la confirmation.");
+        }
+
+        // Démarrer la session pour l'utilisateur
+        $_SESSION['user_id'] = $user->id;
+        $_SESSION['user_role'] = $user->role;
+        $_SESSION['user_email'] = $user->email;
+        $_SESSION['user_prenom'] = $user->prenom;
+        $_SESSION['user_nom'] = $user->nom;
+
+        return $user; // Connexion réussie
     }
 
     // Method to change the user's password

@@ -16,7 +16,7 @@
 
 
 
-$coursInstance = new Cours();
+$coursInstance = new Cours(null,null,null,null,null);
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $coursParPage = 6;
 $offset = ($page - 1) * $coursParPage;
