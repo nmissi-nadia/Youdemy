@@ -5,7 +5,7 @@ $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $parPage = 6; 
 $offset = ($page - 1) * $parPage;
 
-$cours = new Cours('', '', '', '', 0, 0);
+$cours = new Cours(null,null, null, null, null);
 $catalogue = $cours->getPaginatedCourses($offset, $parPage);
 $totalCours = $cours->countTotalCourses();
 $totalPages = ceil($totalCours / $parPage); 
