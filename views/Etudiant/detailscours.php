@@ -11,7 +11,7 @@ if (!$courseId) {
     exit;
 }
 
-$cours = new Cours();
+$cours = new Cours(null, null, null, null, null);
 $course = $cours->obtenirCoursParId($courseId);
 $tags = $cours->obtenirTousLesTagsCours($courseId);
 ?>
@@ -87,12 +87,12 @@ $tags = $cours->obtenirTousLesTagsCours($courseId);
             <div class="bg-white shadow rounded-lg p-6">
                 <div x-show="hasVideo" class="mb-8">
                     <h2 class="text-xl font-semibold mb-4">Vidéo du cours</h2>
-                    <?php if ($course['path_vedio']): ?>
+                    <?php if ($course['chemin_video']): ?>
                         <div class="aspect-w-16 aspect-h-9">
                             <video 
                                 class="w-full rounded-lg shadow"
                                 controls
-                                src="<?php echo htmlspecialchars($course['path_vedio']); ?>">
+                                src="<?php echo $course['chemin_video']; ?>">
                             </video>
                         </div>
                     <?php endif; ?>
@@ -115,7 +115,7 @@ $tags = $cours->obtenirTousLesTagsCours($courseId);
     function courseDetails() {
         return {
             enrolled: false,
-            hasVideo: <?php echo !empty($course['path_vedio']) ? 'true' : 'false' ?>,
+            hasVideo: <?php echo !empty($course['chemin_video']) ? 'true' : 'false' ?>,
             toggleEnrollment() {
                 if (!this.enrolled) {
                     // Appel AJAX pour l'inscription
@@ -138,6 +138,7 @@ $tags = $cours->obtenirTousLesTagsCours($courseId);
                     });
                 }
             }
+           
         }
     }
     </script>

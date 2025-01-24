@@ -4,38 +4,25 @@
 require_once '../../classes/Database.php';
 require_once '../../classes/Etudiant.php';
 session_start();
-
-// Vérification de la connexion
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'etudiant') {
     header('Location: ../login.php');
     exit();
 }
+$etudiant = new Etudiant($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email'], $_SESSION['user_role'],'',$_SESSION['user_status']);
 
-// Création de l'objet étudiant
-$etudiant = new Etudiant($_SESSION['user_id'], $_SESSION['user_nom'], $_SESSION['user_prenom'], $_SESSION['user_email'], $_SESSION['user_role'],'');
-
-// Gestion des actions de l'étudiant
 $coursCatalogue = [];
 $mesCours = [];
 $message = '';
 
 try {
-    // Récupération du catalogue des cours
     $coursCatalogue = $etudiant->afficherCatalogueDesCours();
-
-    // Récupération des cours rejoints
     $mesCours = $etudiant->mesCours();
-
-    // Inscription à un cours
     if (isset($_POST['inscrire']) && isset($_POST['id_cours'])) {
         $idCours = (int)$_POST['id_cours'];
         $etudiant->inscrireCours($idCours);
         $message = "Inscription réussie au cours $idCours.";
-        // Mise à jour des cours rejoints après inscription
         $mesCours = $etudiant->mesCours();
     }
-
-    // Recherche de cours par mots-clés
     if (isset($_GET['search'])) {
         $keyword = htmlspecialchars($_GET['search']);
         $coursCatalogue = $etudiant->rechercherCours($keyword);
