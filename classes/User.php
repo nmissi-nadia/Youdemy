@@ -190,15 +190,11 @@ class User {
     public static function obtenirTousLesCours() {
         try {
             $db = Database::getInstance()->getConnection();
-    
-            // Préparation de la requête pour récupérer tous les cours
             $stmt = $db->prepare("SELECT cours.idcours, cours.titre, cours.description, cours.documentation, cours.path_vedio, cours.dateCreation, user.nom AS enseignant_nom, user.prenom AS enseignant_prenom, categorie.categorie 
                                   FROM cours
                                   INNER JOIN user ON cours.idEnseignant = user.iduser
                                   INNER JOIN categorie ON cours.idcategorie = categorie.idcategorie");
             $stmt->execute();
-    
-            // Récupération des résultats
             $cours = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
             return $cours;
