@@ -172,8 +172,6 @@ class User {
         if (!password_verify($password, $user->passwordHash)) {
             throw new Exception("Email ou mot de passe invalide.");
         }
-
-        // Vérifier le statut de l'utilisateur
         if ($user->getStatus() === 'en attente') {
             throw new Exception("Votre compte est en attente d'approbation. Veuillez attendre la confirmation.");
         }
@@ -185,18 +183,9 @@ class User {
         $_SESSION['user_nom'] = $user->nom;
         $_SESSION['user_status'] = $user->status;
 
-        return $user; // Connexion réussie
+        return $user; 
     }
 
-    // Method to change the user's password
-    public function changePassword($newPassword) {
-        $this->setPasswordHash($newPassword); // Hash the new password
-        $db = Database::getInstance()->getConnection();
-        $stmt = $db->prepare("UPDATE users SET password = :password WHERE id = :id");
-        $stmt->bindParam(':password', $this->passwordHash, PDO::PARAM_STR);
-        $stmt->bindParam(':id', $this->id, PDO::PARAM_INT);
-        $stmt->execute();
-    }
 
     public static function obtenirTousLesCours() {
         try {
